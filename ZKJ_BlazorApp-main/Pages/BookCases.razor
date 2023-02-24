@@ -1,0 +1,53 @@
+﻿@page "/bookcases"
+@attribute [Authorize]
+@inject IBookCasesService BookCasesService
+
+    <div>
+        <a class="btn btn-primary" href='/addBookCase'>Add</a>
+    </div>
+
+<div class="card mt-4">
+    <h4 class="card-header">Book Cases</h4>
+    <div class="card-body">
+        <h6>Book Cases from secure api end point</h6>
+        @if (loading)
+        {
+            <div class="spinner-border spinner-border-sm"></div>
+        }
+        @if (bookCases != null)
+        {
+            <ul>
+                @foreach (var bookCase in bookCases)
+                {
+                    <tr>
+                        <td>@bookCase.Id</td>
+                        <td>@bookCase.Name</td>
+                        <td>@bookCase.Number</td>
+                        <td>
+                            <a class="btn btn-primary" href='/bookCases/@bookCase.Id'>Edit</a>  |
+                            <a class="btn btn-danger" @onclick="() => DeleteBookCase(bookCase.Id)">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </ul>
+        }
+    </div>
+</div>
+
+@code {
+    private bool loading;
+    private IEnumerable<BookCase> bookCases;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        bookCases = await BookCasesService.GetAll();
+        loading = false;
+    }
+
+    protected async Task DeleteBookCase(int id)
+    {
+        await BookCasesService.Delete(id);
+        bookCases = await BookCasesService.GetAll();
+    }
+}

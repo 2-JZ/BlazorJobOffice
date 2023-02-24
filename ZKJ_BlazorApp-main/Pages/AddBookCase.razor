@@ -1,0 +1,43 @@
+﻿@page "/addBookCase"
+@attribute [Authorize]
+@inject IBookCasesService BookCasesService
+@inject Microsoft.AspNetCore.Components.NavigationManager navigationManager
+<h1>
+    Add Book Case
+</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <form>
+            <div class="form-group">
+                <label for="Name" class="control-label">Name</label>
+                <input for="Name" class="form-control" @bind-value="@bookCase.Name" />
+
+                <label for="Number" class="control-label">Number</label>
+                <input for="Number" class="form-control" @bind-value="@bookCase.Number" />
+
+                <input type="hidden" @bind-value="@bookCase.Id" />
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-primary" @onclick="() => CreateArticle()">Save</button>
+                <button type="button" class="btn btn-danger" @onclick="() => cancel()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@code {
+
+    BookCase bookCase = new BookCase();
+
+    protected async Task CreateArticle()
+    {
+        await BookCasesService.Create(bookCase);
+        navigationManager.NavigateTo("/bookCases");
+    }
+
+    void cancel()
+    {
+        navigationManager.NavigateTo("/bookCases");
+    }
+}
