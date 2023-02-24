@@ -1,0 +1,54 @@
+﻿@page "/products"
+@attribute [Authorize]
+@inject IProductsService ProductsService
+
+    <div>
+
+        <a class="btn btn-primary" href='/addProduct'>Add</a>
+    </div>
+
+<div class="card mt-4">
+    <h4 class="card-header">Products</h4>
+    <div class="card-body">
+        <h6>Products from secure api end point</h6>
+        @if (loading)
+        {
+            <div class="spinner-border spinner-border-sm"></div>
+        }
+        @if (products != null)
+        {
+            <ul>
+                @foreach (var product in products)
+                {
+                    <tr>
+                        <td>@product.Id</td>
+                        <td>@product.ProductName</td>
+                        <td>@product.UnitPriceBrutto</td>
+                        <td>
+                            <a class="btn btn-primary" href='/products/@product.Id'>Edit</a>  |
+                            <a class="btn btn-danger" @onclick="() => DeleteProduct(product.Id)">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </ul>
+        }
+    </div>
+</div>
+
+@code {
+    private bool loading;
+    private IEnumerable<Product> products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        products = await ProductsService.GetAll();
+        loading = false;
+    }
+
+    protected async Task DeleteProduct(int id)
+    {
+        await ProductsService.Delete(id);
+        products = await ProductsService.GetAll();
+    }
+}
