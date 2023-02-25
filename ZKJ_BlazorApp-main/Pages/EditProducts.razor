@@ -26,13 +26,13 @@
 @code  {
 
     [Parameter]
-    public string ID { get; set; }
+    public string Id { get; set; }
 
     Product product = new Product();
 
     protected override async Task OnInitializedAsync()
     {
-        product = await ProductsService.GetById(Convert.ToInt32(ID));
+        product = await ProductsService.GetById(Convert.ToInt32(Id));
     }
 
     protected async Task UpdateProduct()

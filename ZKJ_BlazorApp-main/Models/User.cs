@@ -7,5 +7,15 @@ namespace BlazorApp.Models
         public string LastName { get; set; }
         public string Username { get; set; }
         public string AuthData { get; set; }
+        public Role Role { get; set; }
+    }
+
+    public enum Role
+    {
+        Manager,
+        Developer,
+        DelegeteEmployee,
+        OfficeEmployee,
+        CEO
     }
 }
