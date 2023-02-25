@@ -15,30 +15,30 @@ namespace BlazorApp.Services
 
         public Task<IEnumerable<Product>> GetAll()
         {
-            return _httpService.Get<IEnumerable<Product>>("/products");
+            return _httpService.Get<IEnumerable<Product>>("/Products");
         }
 
         public async Task<int> Create(Product product)
         {
-            var result = await _httpService.Post<Product>("/products", product);
+            var result = await _httpService.Post<Product>("Products/addProduct", product);
             return result.Id;
         }
 
         public async Task<int> Delete(int id)
         {
-            await _httpService.Delete($"/products/{id}");
+            await _httpService.Delete($"/Products/{id}");
             return id;
         }
 
         public async Task<int> Update(Product product)
         {
-            var result = await _httpService.Put<Product>($"/products/{product.Id}", product);
+            var result = await _httpService.Put<Product>($"/Products/{product.Id}", product);
             return result.Id;
         }
 
         public Task<Product> GetById(int id)
         {
-            return _httpService.Get<Product>($"/products/{id}");
+            return _httpService.Get<Product>($"/Products/{id}");
         }
     }
 }
