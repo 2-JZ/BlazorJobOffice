@@ -1,10 +1,7 @@
-﻿@page "/addBookCase"
+﻿@page "/Products/{ID}"
 @attribute [Authorize]
 @inject IProductsService ProductsService
 @inject Microsoft.AspNetCore.Components.NavigationManager navigationManager
-<h1>
-    Add Product
-</h1>
 
 <div class="row">
     <div class="col-md-4">
@@ -14,26 +11,34 @@
                 <input for="Name" class="form-control" @bind-value="@product.ProductName" />
 
                 <label for="Number" class="control-label">Number</label>
-                <input for="Number" class="form-control" @bind-value="@product.UnitPriceBrutto" />
+                <input for="Number" class="form-control" @bind-value="@product.UnitPriceBrutto"/>
 
-                <input type="hidden" @bind-value="@product.Id" />
+                <input type="hidden" @bind-value="@product.Id"/>
             </div>
             <div class="form-group">
-                <button type="button" class="btn btn-primary" @onclick="() => CreateArticle()">Save</button>
+                <button type="button" class="btn btn-primary" @onclick="() => UpdateProduct()">Save</button>
                 <button type="button" class="btn btn-danger" @onclick="() => cancel()">Cancel</button>
             </div>
         </form>
     </div>
 </div>
 
-@code {
+@code  {
+
+    [Parameter]
+    public string ID { get; set; }
 
     Product product = new Product();
 
-    protected async Task CreateArticle()
+    protected override async Task OnInitializedAsync()
     {
-        await ProductsService.Create(product);
-        navigationManager.NavigateTo("/products");
+        product = await ProductsService.GetById(Convert.ToInt32(ID));
+    }
+
+    protected async Task UpdateProduct()
+    {
+        await ProductsService.Update(product);
+        navigationManager.NavigateTo("/Products");
     }
 
     void cancel()
