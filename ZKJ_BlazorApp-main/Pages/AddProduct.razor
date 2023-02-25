@@ -10,11 +10,11 @@
     <div class="col-md-4">
         <form>
             <div class="form-group">
-                <label for="Name" class="control-label">Name</label>
-                <input for="Name" class="form-control" @bind-value="@product.ProductName" />
+                <label for="ProductName" class="control-label">ProductName</label>
+                <input for="ProductName" class="form-control" @bind-value="@product.ProductName" />
 
-                <label for="Number" class="control-label">Number</label>
-                <input for="Number" class="form-control" @bind-value="@product.UnitPriceBrutto" />
+                <label for="UnitPriceBrutto" class="control-label">UnitPriceBrutto</label>
+                <input for="UnitPriceBrutto" class="form-control" @bind-value="@product.UnitPriceBrutto" />
 
                 <input type="hidden" @bind-value="@product.Id" />
             </div>
@@ -33,11 +33,11 @@
     protected async Task CreateArticle()
     {
         await ProductsService.Create(product);
-        navigationManager.NavigateTo("/products");
+        navigationManager.NavigateTo("/Products");
     }
 
     void cancel()
     {
-        navigationManager.NavigateTo("/products");
+        navigationManager.NavigateTo("/Products");
     }
 }

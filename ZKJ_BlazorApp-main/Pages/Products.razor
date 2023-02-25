@@ -1,10 +1,10 @@
 ﻿@page "/Products"
 @attribute [Authorize]
 @inject IProductsService ProductsService
+@inject ILocalStorageService LocalStorageService
 
     <div>
-
-        <a class="btn btn-primary" href='/addProduct'>Add</a>
+        <a class="btn btn-primary" href='/Products/addProduct'>Add</a>
     </div>
 
 <div class="card mt-4">
@@ -25,8 +25,11 @@
                         <td>@product.ProductName</td>
                         <td>@product.UnitPriceBrutto</td>
                         <td>
-                            <a class="btn btn-primary" href='/products/@product.Id'>Edit</a>  |
-                            <a class="btn btn-danger" @onclick="() => DeleteProduct(product.Id)">Delete</a>
+                            @if (userMe.Role == Role.Manager || userMe.Role == Role.CEO)
+                            {
+                                <a class="btn btn-primary" href='/products/@product.Id'>Edit</a>
+                                <a class="btn btn-danger" @onclick="() => DeleteProduct(product.Id)">Delete</a>
+                            }
                         </td>
                     </tr>
                 }
@@ -37,12 +40,14 @@
 
 @code {
     private bool loading;
+    private User userMe;
     private IEnumerable<Product> products;
 
     protected override async Task OnInitializedAsync()
     {
         loading = true;
         products = await ProductsService.GetAll();
+        userMe = await LocalStorageService.GetItem<User>("user");
         loading = false;
     }
 
