@@ -21,6 +21,7 @@ namespace BlazorApp
                 .AddScoped<IBookCasesService, BookCasesService>()
                 .AddScoped<IHttpService, HttpService>()
                 .AddScoped<ILocalStorageService, LocalStorageService>()
+                .AddScoped<IContractorsService, ContractorsService>()
                 .AddScoped<IProductsService, ProductsService>();
 
             // configure http client

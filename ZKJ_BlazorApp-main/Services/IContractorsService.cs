@@ -6,10 +6,10 @@
 
     public interface IContractorsService
     {
-        Task<IEnumerable<Contractors>> GetAll();
-        Task<int> Create(Contractors contractor);
-        Task<int> Delete(int Id);
-        Task<int> Update(Contractors contractor);
-        Task<Contractors> GetById(int Id);
+        Task<IEnumerable<Contractor>> GetAll();
+        Task<int> Create(Contractor contractor);
+        Task<int> Delete(int id);
+        Task<int> Update(Contractor contractor);
+        Task<Contractor> GetById(int id);
     }
 }
