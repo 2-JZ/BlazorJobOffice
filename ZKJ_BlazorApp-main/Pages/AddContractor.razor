@@ -1,6 +1,6 @@
 ﻿@page "/addContractor"
 @attribute [Authorize]
-@inject IProductsService ProductsService
+@inject IContractorsService ContractorsService
 @inject Microsoft.AspNetCore.Components.NavigationManager navigationManager
 <h1>
     Add Contractor
@@ -11,12 +11,12 @@
         <form>
             <div class="form-group">
                 <label for="Name" class="control-label">Name</label>
-                <input for="Name" class="form-control" @bind-value="@product.ContractorName" />
+                <input for="Name" class="form-control" @bind-value="@contractor.Name" />
 
                 <label for="Number" class="control-label">Number</label>
-                <input for="Number" class="form-control" @bind-value="@product.UnitPriceBrutto" />
+                <input for="Number" class="form-control" @bind-value="@contractor.NIP" />
 
-                <input type="hidden" @bind-value="@product.Id" />
+                <input type="hidden" @bind-value="@contractor.Id" />
             </div>
             <div class="form-group">
                 <button type="button" class="btn btn-primary" @onclick="() => CreateArticle()">Save</button>
@@ -28,16 +28,16 @@
 
 @code {
 
-    Product product = new Product();
+    Contractor contractor = new Contractor();
 
     protected async Task CreateArticle()
     {
-        await ProductsService.Create(product);
-        navigationManager.NavigateTo("/products");
+        await ContractorsService.Create(contractor);
+        navigationManager.NavigateTo("/contractors");
     }
 
     void cancel()
     {
-        navigationManager.NavigateTo("/products");
+        navigationManager.NavigateTo("/contractors");
     }
 }
