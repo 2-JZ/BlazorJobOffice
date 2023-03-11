@@ -1,5 +1,61 @@
-﻿<h3>Contractors</h3>
+﻿@page "/Contractors"
+@attribute [Authorize]
+@inject IContractorsService ContractorsService
+@inject ILocalStorageService LocalStorageService
+
+<div>
+    <a class="btn btn-primary" href='/Contractors/addContractor'>Add</a>
+</div>
+
+<div class="card mt-4">
+    <h4 class="card-header">Contractors</h4>
+
+    <div class="card-body">
+        <h6>Contractors from secure api end point</h6>
+        @if (loading)
+        {
+            <div class="spinner-border spinner-border-sm"></div>
+        }
+        @if (contractors != null)
+        {
+            <ul>
+                @foreach (var contractor in contractors)
+                {
+                    <tr>
+                        <td>@contractor.Id</td>
+                        <td>@contractor.Name</td>
+                        <td>@contractor.NIP</td>
+                        <td>
+                            @if (userMe.Role != Role.Developer)
+                            {
+                                <a class="btn btn-primary" href='/Contractors/@contractor.Id'>Edit</a>
+                                <a class="btn btn-danger" @onclick="() => DeleteBookCase(contractor.Id)">Delete</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </ul>
+        }
+    </div>
+</div>
 
 @code {
+    private bool loading;
+    private User userMe;
 
+    private IEnumerable<Contractor> contractors;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        contractors = await ContractorsService.GetAll();
+        userMe = await LocalStorageService.GetItem<User>("user");
+        loading = false;
+    }
+
+    protected async Task DeleteBookCase(int id)
+    {
+        await ContractorsService.Delete(id);
+        contractors = await ContractorsService.GetAll();
+    }
 }
