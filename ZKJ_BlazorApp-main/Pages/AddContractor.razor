@@ -1,4 +1,4 @@
-﻿@page "/addContractor"
+﻿@page "/Contractors/addContractor"
 @attribute [Authorize]
 @inject IContractorsService ContractorsService
 @inject Microsoft.AspNetCore.Components.NavigationManager navigationManager
@@ -13,7 +13,7 @@
                 <label for="Name" class="control-label">Name</label>
                 <input for="Name" class="form-control" @bind-value="@contractor.Name" />
 
-                <label for="Number" class="control-label">Number</label>
+                <label for="Number" class="control-label">NIP</label>
                 <input for="Number" class="form-control" @bind-value="@contractor.NIP" />
 
                 <input type="hidden" @bind-value="@contractor.Id" />
@@ -33,11 +33,11 @@
     protected async Task CreateArticle()
     {
         await ContractorsService.Create(contractor);
-        navigationManager.NavigateTo("/contractors");
+        navigationManager.NavigateTo("/Contractors");
     }
 
     void cancel()
     {
-        navigationManager.NavigateTo("/contractors");
+        navigationManager.NavigateTo("/Contractors");
     }
 }

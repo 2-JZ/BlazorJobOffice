@@ -1,5 +1,48 @@
-﻿<h3>EditContractor</h3>
+﻿@page "/Contractors/{ID}"
+@attribute [Authorize]
+@inject IContractorsService ContractorService
+@inject Microsoft.AspNetCore.Components.NavigationManager navigationManager
 
-@code {
+<div class="row">
+    <div class="col-md-4">
+        <form>
+            <div class="form-group">
+                <label for="Name" class="control-label">Name</label>
+                <input for="Name" class="form-control" @bind-value="@contractor.Name" />
 
+                <label for="Number" class="control-label">NIP</label>
+                <input for="Number" class="form-control" @bind-value="@contractor.NIP"/>
+
+                <input type="hidden" @bind-value="@contractor.Id"/>
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-primary" @onclick="() => UpdateProduct()">Save</button>
+                <button type="button" class="btn btn-danger" @onclick="() => cancel()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@code  {
+
+    [Parameter]
+    public string Id { get; set; }
+
+    Contractor contractor = new Contractor();
+
+    protected override async Task OnInitializedAsync()
+    {
+        contractor = await ContractorService.GetById(Convert.ToInt32(Id));
+    }
+
+    protected async Task UpdateProduct()
+    {
+        await ContractorService.Update(contractor);
+        navigationManager.NavigateTo("/Contractors");
+    }
+
+    void cancel()
+    {
+        navigationManager.NavigateTo("/Contractors");
+    }
 }
