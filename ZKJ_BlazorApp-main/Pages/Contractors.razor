@@ -29,7 +29,7 @@
                             @if (userMe.Role != Role.Developer)
                             {
                                 <a class="btn btn-primary" href='/Contractors/@contractor.Id'>Edit</a>
-                                <a class="btn btn-danger" @onclick="() => DeleteBookCase(contractor.Id)">Delete</a>
+                                <a class="btn btn-danger" @onclick="() => DeleteContractor(contractor.Id)">Delete</a>
                             }
                         </td>
                     </tr>
@@ -53,7 +53,8 @@
         loading = false;
     }
 
-    protected async Task DeleteBookCase(int id)
+    protected async Task DeleteContractor(int id)
+
     {
         await ContractorsService.Delete(id);
         contractors = await ContractorsService.GetAll();
