@@ -4,3 +4,23 @@
 <div class="card mt-4">
     <h4 class="card-header">Hi! You're logged!</h4>
 </div>
+
+<h3>Witaj na stronie głównej!</h3>
+
+<p>To jest treść strony głównej.</p>
+
+<button @onclick="PrzyciskClicked">Kliknij mnie!</button>
+
+@code {
+    // Kod C# dołączony do komponentu
+
+    private void PrzyciskClicked()
+    {
+        // Tu możesz umieścić logikę obsługi kliknięcia przycisku
+        // Na przykład, zmiana tekstu po kliknięciu
+        Message = "Przycisk został kliknięty!";
+    }
+
+    // Dodatkowe zmienne i metody, jeśli są potrzebne
+    private string Message = "Witaj, to jest domyślna wiadomość.";
+}

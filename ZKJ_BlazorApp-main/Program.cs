@@ -1,3 +1,4 @@
+
 using BlazorApp.Helpers;
 using BlazorApp.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -23,7 +24,9 @@ namespace BlazorApp
                 .AddScoped<ILocalStorageService, LocalStorageService>()
                 .AddScoped<IContractorsService, ContractorsService>()
                 .AddScoped<IContactsService, ContactsService>()
-                .AddScoped<IProductsService, ProductsService>();
+                .AddScoped<IProductsService, ProductsService>()
+                .AddScoped<ICategoriesService, CategoriesService>();
+
 
             // configure http client
             builder.Services.AddScoped(x => {

@@ -10,6 +10,8 @@ namespace BlazorApp.Models
         public decimal? UnitPriceBrutto { get; set; }
         public float? Discount { get; set; }
         public DateTime? LastModified { get; set; }
-        
+        public int CategoryId { get; set; }
+        public virtual Category Category { get; set; }
+
     }
 }

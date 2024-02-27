@@ -1,6 +1,7 @@
 ﻿@page "/Products/addProduct"
 @attribute [Authorize]
 @inject IProductsService ProductsService
+@inject ICategoriesService CategoriesService
 @inject Microsoft.AspNetCore.Components.NavigationManager navigationManager
 <h1>
     Add Product
@@ -16,28 +17,239 @@
                 <label for="UnitPriceBrutto" class="control-label">UnitPriceBrutto</label>
                 <input for="UnitPriceBrutto" class="form-control" @bind-value="@product.UnitPriceBrutto" />
 
+                <label for="CategoryId">Category:</label>
+                <select id="CategoryId" @bind="product.CategoryId">
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+
                 <input type="hidden" @bind-value="@product.Id" />
+
             </div>
             <div class="form-group">
-                <button type="button" class="btn btn-primary" @onclick="() => CreateArticle()">Save</button>
-                <button type="button" class="btn btn-danger" @onclick="() => cancel()">Cancel</button>
+                <button type="button" class="btn btn-primary" @onclick="CreateArticle">Save</button>
+                <button type="button" class="btn btn-danger" @onclick="Cancel">Cancel</button>
             </div>
         </form>
     </div>
 </div>
 
-@code {
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
 
+@code {
     Product product = new Product();
+    public IEnumerable<Category> categories;
+    public string errorMessage;
 
     protected async Task CreateArticle()
     {
-        await ProductsService.Create(product);
-        navigationManager.NavigateTo("/Products");
+        try
+        {
+            Console.WriteLine("Attempting to create article...");
+
+            if (categories != null && product.CategoryId != 0)
+            {
+                // Upewnij się, że kategoria o danym Id istnieje
+                if (categories.Any(category => category.Id == product.CategoryId))
+                {
+                    await ProductsService.Create(product);
+                    Console.WriteLine("Article created successfully!");
+                    navigationManager.NavigateTo("/Products");
+                }
+                else
+                {
+                    // Obsłuż błąd - wybrana kategoria nie istnieje
+                    errorMessage = "Selected category does not exist.";
+                    Console.WriteLine("Error: Selected category does not exist.");
+                }
+            }
+            else
+            {
+                // Obsłuż błąd - brak dostępnych kategorii lub nieprawidłowe Id kategorii
+                errorMessage = "No available categories or invalid category Id.";
+                Console.WriteLine("Error: No available categories or invalid category Id.");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Obsłuż błąd ogólny
+            errorMessage = $"An error occurred: {ex.Message}";
+            Console.WriteLine($"Error: {ex.Message}");
+        }
     }
 
-    void cancel()
+    protected void Cancel()
     {
         navigationManager.NavigateTo("/Products");
     }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Console.WriteLine("Attempting to load categories...");
+            categories = await CategoriesService.GetAll();
+            Console.WriteLine("Categories loaded successfully!");
+        }
+        catch (Exception ex)
+        {
+            // Obsłuż błąd pobierania kategorii
+            errorMessage = $"Error loading categories: {ex.Message}";
+            Console.WriteLine($"Error loading categories: {ex.Message}");
+        }
+    }
 }
+
+
+@* 
+
+// WPROWADZENIE PODKATEGORII 
+
+@page "/Products/addProduct"
+@attribute [Authorize]
+@inject IProductsService ProductsService
+@inject ICategoriesService CategoriesService
+@inject Microsoft.AspNetCore.Components.NavigationManager navigationManager
+<h1>
+    Add Product
+</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <form>
+            <div class="form-group">
+                <label for="ProductName" class="control-label">ProductName</label>
+                <input for="ProductName" class="form-control" @bind-value="@product.ProductName" />
+
+                <label for="UnitPriceBrutto" class="control-label">UnitPriceBrutto</label>
+                <input for="UnitPriceBrutto" class="form-control" @bind-value="@product.UnitPriceBrutto" />
+
+                <label for="CategoryId">Category:</label>
+                <select id="CategoryId" @bind="product.CategoryId" @onchange="OnCategoryChange">
+                    <option value="">Select Category</option>
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+
+                @if (subcategories != null && subcategories.Any())
+                {
+                    <label for="SubcategoryId">Subcategory:</label>
+                    <select id="SubcategoryId" @bind="product.SubcategoryId">
+                        <option value="">Select Subcategory</option>
+                        @foreach (var subcategory in subcategories)
+                        {
+                            <option value="@subcategory.Id">@subcategory.Name</option>
+                        }
+                    </select>
+                }
+
+                <input type="hidden" @bind-value="@product.Id" />
+
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-primary" @onclick="CreateArticle">Save</button>
+                <button type="button" class="btn btn-danger" @onclick="Cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+@code {
+    Product product = new Product();
+    public IEnumerable<Category> categories;
+    public IEnumerable<Subcategory> subcategories;
+    public string errorMessage;
+
+    protected async Task CreateArticle()
+    {
+        try
+        {
+            Console.WriteLine("Attempting to create article...");
+
+            if (categories != null && product.CategoryId != 0 && subcategories != null && subcategories.Any() && product.SubcategoryId != 0)
+            {
+                // Upewnij się, że zarówno kategoria, jak i podkategoria o danym Id istnieją
+                if (categories.Any(category => category.Id == product.CategoryId) &&
+                    subcategories.Any(subcategory => subcategory.Id == product.SubcategoryId))
+                {
+                    await ProductsService.Create(product);
+                    Console.WriteLine("Article created successfully!");
+                    navigationManager.NavigateTo("/Products");
+                }
+                else
+                {
+                    // Obsłuż błąd - wybrana kategoria lub podkategoria nie istnieje
+                    errorMessage = "Selected category or subcategory does not exist.";
+                    Console.WriteLine("Error: Selected category or subcategory does not exist.");
+                }
+            }
+            else
+            {
+                // Obsłuż błąd - brak dostępnych kategorii, nieprawidłowe Id kategorii lub brak dostępnych podkategorii, nieprawidłowe Id podkategorii
+                errorMessage = "Invalid category or subcategory selection.";
+                Console.WriteLine("Error: Invalid category or subcategory selection.");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Obsłuż błąd ogólny
+            errorMessage = $"An error occurred: {ex.Message}";
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private void OnCategoryChange(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out int categoryId))
+        {
+            product.CategoryId = categoryId;
+            // Aktualizuj listę podkategorii na podstawie nowo wybranej kategorii
+            subcategories = GetSubcategories(product.CategoryId);
+        }
+        else
+        {
+            // Obsłuż błąd - nie udało się przekonwertować wartości na int
+            Console.WriteLine("Error: Unable to convert category ID to int.");
+        }
+    }
+
+    private IEnumerable<Subcategory> GetSubcategories(int categoryId)
+    {
+        // Implementacja logiki pobierania podkategorii w zależności od wybranej kategorii
+        // Użyj odpowiedniej metody z serwisu lub repozytorium
+        // ...
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Console.WriteLine("Attempting to load categories...");
+            categories = await CategoriesService.GetAll();
+            Console.WriteLine("Categories loaded successfully!");
+        }
+        catch (Exception ex)
+        {
+            // Obsłuż błąd pobierania kategorii
+            errorMessage = $"Error loading categories: {ex.Message}";
+            Console.WriteLine($"Error loading categories: {ex.Message}");
+        }
+    }
+} *@
