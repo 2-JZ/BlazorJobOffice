@@ -1,0 +1,61 @@
+﻿@page "/Categories"
+@attribute [Authorize]
+@inject ICategoriesService CategoriesService
+@inject ILocalStorageService LocalStorageService
+
+<div>
+    <a class="btn btn-primary" href='/Categories/addCategories'>Add</a>
+</div>
+
+<div class="card mt-4">
+    <h4 class="card-header">Categories</h4>
+    <div class="card-body">
+        c
+        <h6>Categories from secure api end point</h6>
+        @if (loading)
+        {
+            <div class="spinner-border spinner-border-sm"></div>
+        }
+        @if (category != null)
+        {
+            <ul>
+                @foreach (var category in category) 
+                {
+                    <tr>
+                        <td>@category.Id</td>
+                        <td>@category.Name</td>
+                        <td>@category.Description</td>
+                        <td>@category.ParentCategoryId</td>
+                        <td>
+                            @if (userMe.Role == Role.Manager || userMe.Role == Role.CEO || userMe.Role == Role.Admin)
+                            {
+                                <a class="btn btn-primary" href='/categories/@category.Id'>Edit</a>
+                                <a class="btn btn-danger" @onclick="() => DeleteCategory(category.Id)">Delete</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </ul>
+        }
+    </div>
+</div>
+
+@code {
+    private bool loading;
+    private User userMe;
+    private IEnumerable<Category> category;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        category = await CategoriesService.GetAll();
+        userMe = await LocalStorageService.GetItem<User>("user");
+        loading = false;
+    }
+
+    protected async Task DeleteCategory(int id)
+    {
+        await CategoriesService.Delete(id);
+        category = await CategoriesService.GetAll();
+    }
+}
