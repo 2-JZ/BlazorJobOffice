@@ -16,6 +16,7 @@ namespace BlazorApp.Models
         Developer,
         DelegeteEmployee,
         OfficeEmployee,
-        CEO
+        CEO,
+        Admin
     }
 }
