@@ -27,7 +27,7 @@ namespace BlazorApp.Services
         public async Task ResetPassword(string email)
         {
             // Wywo³aj odpowiedni endpoint API do resetowania has³a
-            await _httpService.Post($"user/resetpassword/{email}", null);
+            await _httpService.Post<object>($"/user/resetpassword/{email}", null);
         }
     }
 }

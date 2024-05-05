@@ -7,8 +7,8 @@
     public interface IUserService
     {
         Task<IEnumerable<User>> GetAll();
-        Task<User> AddUser();
-        Task ResetPassword();
+        Task<User> AddUser(User user);
+        Task ResetPassword(string email);
 
 
 
