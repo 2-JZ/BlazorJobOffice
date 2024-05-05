@@ -23,15 +23,19 @@
                     <ValidationMessage For="@(() => model.Password)" />
                 </div>
                 <button class="btn btn-primary">
-                    @if (loading) {
+                    @if (loading)
+                    {
                         <span class="spinner-border spinner-border-sm mr-1"></span>
                     }
                     Login
                 </button>
-                @if (!string.IsNullOrEmpty(error)) {
+                @if (!string.IsNullOrEmpty(error))
+                {
                     <div class="alert alert-danger mt-3 mb-0">@error</div>
                 }
             </EditForm>
+            <button class="btn btn-secondary mt-2" @onclick="AddUser">Add User</button>
+            <button class="btn btn-secondary mt-2" @onclick="ForgotPassword">Forgot Password</button>
         </div>
     </div>
 </div>
@@ -65,6 +69,16 @@
             loading = false;
             StateHasChanged();
         }
+    }
+
+    private void AddUser()
+    {
+        NavigationManager.NavigateTo("/addUser");
+    }
+
+    private void ForgotPassword()
+    {
+        NavigationManager.NavigateTo("/forgotPassword");
     }
 
     private class Model

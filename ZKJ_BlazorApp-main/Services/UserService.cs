@@ -17,5 +17,17 @@ namespace BlazorApp.Services
         {
             return await _httpService.Get<IEnumerable<User>>("user/users");
         }
+
+        public async Task<User> AddUser(User user)
+        {
+            // Wywo³aj odpowiedni endpoint API do dodania u¿ytkownika
+            return await _httpService.Post<User>("user/add", user);
+        }
+
+        public async Task ResetPassword(string email)
+        {
+            // Wywo³aj odpowiedni endpoint API do resetowania has³a
+            await _httpService.Post($"user/resetpassword/{email}", null);
+        }
     }
 }
