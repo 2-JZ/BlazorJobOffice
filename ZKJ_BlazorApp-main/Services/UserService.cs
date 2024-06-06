@@ -21,13 +21,13 @@ namespace BlazorApp.Services
         public async Task<User> AddUser(User user)
         {
             // Wywo³aj odpowiedni endpoint API do dodania u¿ytkownika
-            return await _httpService.Post<User>("user/add", user);
+            return await _httpService.Post<User>("User/add", user);
         }
 
         public async Task ResetPassword(string email)
         {
             // Wywo³aj odpowiedni endpoint API do resetowania has³a
-            await _httpService.Post($"user/resetpassword/{email}", null);
+            await _httpService.Post<object>($"/user/resetpassword/{email}", null);
         }
     }
 }
