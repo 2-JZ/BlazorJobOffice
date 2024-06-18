@@ -6,7 +6,7 @@ namespace BlazorApp.Services
 {
     public class UserService : IUserService
     {
-        private IHttpService _httpService;
+        private readonly IHttpService _httpService;
 
         public UserService(IHttpService httpService)
         {
@@ -20,14 +20,13 @@ namespace BlazorApp.Services
 
         public async Task<User> AddUser(User user)
         {
-            // Wywo³aj odpowiedni endpoint API do dodania u¿ytkownika
-            return await _httpService.Post<User>("User/add", user);
+            return await _httpService.Post<User>("user/add", user);
         }
 
         public async Task ResetPassword(string email)
         {
-            // Wywo³aj odpowiedni endpoint API do resetowania has³a
-            await _httpService.Post<object>($"/user/resetpassword/{email}", null);
+            var request = new { Email = email };
+            await _httpService.Post<object>("user/reset-password", request);
         }
     }
 }
