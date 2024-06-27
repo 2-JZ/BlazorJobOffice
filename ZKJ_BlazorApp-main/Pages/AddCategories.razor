@@ -1,5 +1,61 @@
-﻿<h3>AddCategories</h3>
+﻿@page "/Categories/addCategory"
+@attribute [Authorize]
+@inject ICategoriesService CategoriesService
+@inject Microsoft.AspNetCore.Components.NavigationManager NavigationManager
+
+<h1>Add Category</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="@category" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="Name" class="control-label">Name</label>
+                <InputText id="Name" class="form-control" @bind-Value="category.Name" />
+
+                <label for="Description" class="control-label">Description</label>
+                <InputTextArea id="Description" class="form-control" @bind-Value="category.Description" />
+
+                <label for="ParentCategoryId" class="control-label">Parent Category ID</label>
+                <InputNumber id="ParentCategoryId" class="form-control" @bind-Value="category.ParentCategoryId" />
+
+                <label for="Image" class="control-label">Image</label>
+                <InputFile OnChange="LoadImage" />
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-danger" @onclick="Cancel">Cancel</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
 
 @code {
+    private Category category = new Category();
+    private IBrowserFile imageFile;
 
+    private void LoadImage(InputFileChangeEventArgs e)
+    {
+        imageFile = e.File;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (imageFile != null)
+        {
+            var buffer = new byte[imageFile.Size];
+            await imageFile.OpenReadStream().ReadAsync(buffer);
+            category.ImagePath = Convert.ToBase64String(buffer); // Zapisuje jako Base64 string
+        }
+
+        await CategoriesService.Create(category);
+        NavigationManager.NavigateTo("/Categories");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/Categories");
+    }
 }

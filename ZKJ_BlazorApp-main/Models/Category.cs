@@ -46,5 +46,8 @@ namespace BlazorApp.Models
         // field for ordering childrens 
         public int? Order { get; set; }
 
+        public string ImagePath { get; set; }
+
+
     }
 }
