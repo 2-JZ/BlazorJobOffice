@@ -1,4 +1,7 @@
 ﻿@page "/Categories/addCategory"
+@using System.Text.Json
+@using System.Net.Http
+@using System.Text
 @attribute [Authorize]
 @inject ICategoriesService CategoriesService
 @inject Microsoft.AspNetCore.Components.NavigationManager NavigationManager
@@ -43,15 +46,30 @@
 
     private async Task HandleValidSubmit()
     {
+        var formData = new MultipartFormDataContent();
+
         if (imageFile != null)
         {
-            var buffer = new byte[imageFile.Size];
-            await imageFile.OpenReadStream().ReadAsync(buffer);
-            category.ImagePath = Convert.ToBase64String(buffer); // Zapisuje jako Base64 string
+            var fileContent = new StreamContent(imageFile.OpenReadStream());
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(imageFile.ContentType);
+            formData.Add(fileContent, "Image", imageFile.Name);
         }
 
-        await CategoriesService.Create(category);
-        NavigationManager.NavigateTo("/Categories");
+        var categoryJson = JsonSerializer.Serialize(category);
+        var categoryContent = new StringContent(categoryJson, Encoding.UTF8, "application/json");
+        formData.Add(categoryContent, "category");
+
+        var httpClient = new HttpClient();
+        var response = await httpClient.PostAsync("your_api_endpoint/Category/addCategory", formData);
+
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo("/Categories");
+        }
+        else
+        {
+            // Handle the error (e.g., show a message to the user)
+        }
     }
 
     private void Cancel()
