@@ -1,4 +1,5 @@
 using BlazorApp.Models;
+using BlazorApp.Services;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
@@ -10,78 +11,95 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace BlazorApp.Services
+public class HttpService : IHttpService
 {
-    public class HttpService : IHttpService
+    private readonly HttpClient _httpClient;
+    private readonly NavigationManager _navigationManager;
+    private readonly ILocalStorageService _localStorageService;
+
+    public HttpService(HttpClient httpClient, NavigationManager navigationManager, ILocalStorageService localStorageService)
     {
-        private HttpClient _httpClient;
-        private NavigationManager _navigationManager;
-        private ILocalStorageService _localStorageService;
+        _httpClient = httpClient;
+        _navigationManager = navigationManager;
+        _localStorageService = localStorageService;
+    }
 
-        public HttpService(
-            HttpClient httpClient,
-            NavigationManager navigationManager,
-            ILocalStorageService localStorageService)
+    public async Task<T> Get<T>(string uri)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        return await SendRequest<T>(request);
+    }
+
+    public Task<T> Post<T>(string uri, object value)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, uri)
         {
-            _httpClient = httpClient;
-            _navigationManager = navigationManager;
-            _localStorageService = localStorageService;
+            Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json")
+        };
+        return SendRequest<T>(request);
+    }
+
+    public async Task<T> Post<T>(string uri, MultipartFormDataContent formData)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, uri)
+        {
+            Content = formData
+        };
+        return await SendRequest<T>(request);
+    }
+
+    public Task<T> Put<T>(string uri, object value)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Put, uri)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json")
+        };
+        return SendRequest<T>(request);
+    }
+
+    public Task Delete(string uri)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Delete, uri);
+        return SendRequest<int>(request);
+    }
+
+    private async Task<T> SendRequest<T>(HttpRequestMessage request)
+    {
+        var user = await _localStorageService.GetItem<User>("user");
+        var isApiUrl = !request.RequestUri.IsAbsoluteUri;
+        if (user != null && isApiUrl)
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", user.AuthData);
         }
 
-        public async Task<T> Get<T>(string uri)
+        using var response = await _httpClient.SendAsync(request);
+
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, uri);
-            return await SendRequest<T>(request);
+            _navigationManager.NavigateTo("logout");
+            return default;
         }
 
-        public Task<T> Post<T>(string uri, object value)
+        if (!response.IsSuccessStatusCode)
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, uri);
-            request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
-            return SendRequest<T>(request);
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Error: {response.StatusCode}, Details: {errorContent}");
         }
 
-        public Task<T> Put<T>(string uri, object value)
+        if (typeof(T) == typeof(void))
         {
-            var request = new HttpRequestMessage(HttpMethod.Put, uri);
-            request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
-            return SendRequest<T>(request);
+            return default;
         }
 
-        public Task Delete(string uri)
+        try
         {
-            var request = new HttpRequestMessage(HttpMethod.Delete, uri);
-            return SendRequest<int>(request);
-        }
-
-        private async Task<T> SendRequest<T>(HttpRequestMessage request)
-        {
-            // add basic auth header if user is logged in and request is to the api url
-            var user = await _localStorageService.GetItem<User>("user");
-            var isApiUrl = !request.RequestUri.IsAbsoluteUri;
-            if (user != null && isApiUrl)
-            {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", user.AuthData);
-            }
-
-            using var response = await _httpClient.SendAsync(request);
-
-            // auto logout on 401 response
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                _navigationManager.NavigateTo("logout");
-                return default;
-            }
-
-            // throw exception on error response
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-                throw new Exception(error["message"]);
-            }
-
             var result = await response.Content.ReadFromJsonAsync<Reponse<T>>();
             return result.Data;
+        }
+        catch (Exception ex)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Error reading response: {ex.Message}. Response content: {errorContent}");
         }
     }
 }

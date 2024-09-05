@@ -1,17 +1,16 @@
 ﻿using BlazorApp.Models;
 using BlazorApp.Services;
-using System.Collections.Generic;
-using System.Net.Http;
+using Microsoft.AspNetCore.Components.Forms;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
-using System.Net.Http.Json;
 
 public class CategoriesService : ICategoriesService
 {
-    private IHttpService _httpService;
+    private readonly IHttpService _httpService;
 
     public CategoriesService(IHttpService httpService)
     {
@@ -23,26 +22,10 @@ public class CategoriesService : ICategoriesService
         return _httpService.Get<IEnumerable<Category>>("/Category");
     }
 
-    public async Task<int> Create(Category category)
+    public async Task<int> CreateCategory(Category category)
     {
-        using var httpClient = new HttpClient();
-        var categoryJson = JsonSerializer.Serialize(category);
-        var categoryContent = new StringContent(categoryJson, Encoding.UTF8, "application/json");
-
-        using var formData = new MultipartFormDataContent
-        {
-            { categoryContent, "category" }
-        };
-
-        var response = await httpClient.PostAsync("your_api_endpoint/Category/addCategory", formData);
-
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<Category>();
-            return result.Id;
-        }
-
-        throw new Exception("Error creating category.");
+        var result = await _httpService.Post<Category>("Category/AddCategory", category);
+        return result.Id;
     }
 
     public async Task<int> Delete(int id)

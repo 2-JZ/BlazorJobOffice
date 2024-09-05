@@ -1,79 +1,79 @@
-﻿@page "/Categories/addCategory"
-@using System.Text.Json
-@using System.Net.Http
-@using System.Text
+﻿@page "/Category/AddCategory"
+@using System.IO
 @attribute [Authorize]
 @inject ICategoriesService CategoriesService
-@inject Microsoft.AspNetCore.Components.NavigationManager NavigationManager
+@inject NavigationManager NavigationManager
 
 <h1>Add Category</h1>
 
 <div class="row">
     <div class="col-md-4">
-        <EditForm Model="@category" OnValidSubmit="HandleValidSubmit">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-
+        <form>
             <div class="form-group">
                 <label for="Name" class="control-label">Name</label>
-                <InputText id="Name" class="form-control" @bind-Value="category.Name" />
+                <input id="Name" class="form-control" @bind-value="@category.Name" />
 
                 <label for="Description" class="control-label">Description</label>
-                <InputTextArea id="Description" class="form-control" @bind-Value="category.Description" />
+                <input id="Description" class="form-control" @bind-value="@category.Description" />
 
                 <label for="ParentCategoryId" class="control-label">Parent Category ID</label>
-                <InputNumber id="ParentCategoryId" class="form-control" @bind-Value="category.ParentCategoryId" />
+                <input id="ParentCategoryId" class="form-control" @bind-value="@category.ParentCategoryId" />
 
                 <label for="Image" class="control-label">Image</label>
-                <InputFile OnChange="LoadImage" />
+                <InputFile id="Image" OnChange="LoadImage" />
             </div>
             <div class="form-group">
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-primary" @onclick="CreateCategory">Create</button>
                 <button type="button" class="btn btn-danger" @onclick="Cancel">Cancel</button>
             </div>
-        </EditForm>
+        </form>
     </div>
 </div>
 
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
 @code {
     private Category category = new Category();
-    private IBrowserFile imageFile;
+    private byte[] imageBytes; // Store the image as a byte array
+    private string errorMessage;
 
-    private void LoadImage(InputFileChangeEventArgs e)
+    // Method to convert the selected image file to a byte array
+    private async void LoadImage(InputFileChangeEventArgs e)
     {
-        imageFile = e.File;
+        var file = e.File;
+        if (file != null)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                await file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 15).CopyToAsync(memoryStream);
+                imageBytes = memoryStream.ToArray(); // Store image as byte array
+            }
+        }
     }
 
-    private async Task HandleValidSubmit()
+    private async Task CreateCategory()
     {
-        var formData = new MultipartFormDataContent();
-
-        if (imageFile != null)
+        try
         {
-            var fileContent = new StreamContent(imageFile.OpenReadStream());
-            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(imageFile.ContentType);
-            formData.Add(fileContent, "Image", imageFile.Name);
+            category.ImageData = imageBytes;
+            // Call the service method to create the category with image bytes
+            await CategoriesService.CreateCategory(category);
+            NavigationManager.NavigateTo("/Category");
         }
-
-        var categoryJson = JsonSerializer.Serialize(category);
-        var categoryContent = new StringContent(categoryJson, Encoding.UTF8, "application/json");
-        formData.Add(categoryContent, "category");
-
-        var httpClient = new HttpClient();
-        var response = await httpClient.PostAsync("your_api_endpoint/Category/addCategory", formData);
-
-        if (response.IsSuccessStatusCode)
+        catch (Exception ex)
         {
-            NavigationManager.NavigateTo("/Categories");
-        }
-        else
-        {
-            // Handle the error (e.g., show a message to the user)
+            errorMessage = $"An error occurred: {ex.Message}";
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/Categories");
+        NavigationManager.NavigateTo("/Category");
     }
 }

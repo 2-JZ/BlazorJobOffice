@@ -27,7 +27,7 @@ namespace BlazorApp.Models
 
         //public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 
-        
+
         public int Id { get; set; }
 
         public string Name { get; set; }
@@ -39,14 +39,17 @@ namespace BlazorApp.Models
 
         public Category ParentCategory { get; set; }
 
-        public List<ProductAttributes> Attributes { get; set; }
+        public List<ProductAttributes>? Attributes { get; set; }
 
-        public List<Tag> Tags { get; set; }
+        public List<Tag>? Tags { get; set; }
 
         // field for ordering childrens 
         public int? Order { get; set; }
 
-        public string ImagePath { get; set; }
+        public string? ImagePath { get; set; } //for FromForm
+
+        public byte[]? ImageData { get; set; }  // Store image as binary data
+
 
 
     }

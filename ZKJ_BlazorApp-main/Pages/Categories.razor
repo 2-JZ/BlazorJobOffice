@@ -1,10 +1,10 @@
-﻿@page "/Categories"
+﻿@* @page "/Category"
 @attribute [Authorize]
 @inject ICategoriesService CategoriesService
 @inject ILocalStorageService LocalStorageService
 
 <div>
-    <a class="btn btn-primary" href='/Categories/addCategories'>Add</a>
+    <a class="btn btn-primary" href='/Category/AddCategory'>Add</a>
 </div>
 
 <div class="card mt-4">
@@ -36,6 +36,89 @@
                     </tr>
                 }
             </ul>
+        }
+    </div>
+</div>
+
+@code {
+    private bool loading;
+    private User userMe;
+    private IEnumerable<Category> category;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        category = await CategoriesService.GetAll();
+        userMe = await LocalStorageService.GetItem<User>("user");
+        loading = false;
+    }
+
+    protected async Task DeleteCategory(int id)
+    {
+        await CategoriesService.Delete(id);
+        category = await CategoriesService.GetAll();
+    }
+} *@
+
+    @page "/Category"
+@attribute [Authorize]
+@inject ICategoriesService CategoriesService
+@inject ILocalStorageService LocalStorageService
+
+<div>
+    <a class="btn btn-primary" href='/Category/AddCategory'>Add</a>
+</div>
+
+<div class="card mt-4">
+    <h4 class="card-header">Categories</h4>
+    <div class="card-body">
+        <h6>Categories from secure API endpoint</h6>
+        @if (loading)
+        {
+            <div class="spinner-border spinner-border-sm"></div>
+        }
+        else if (category != null)
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Parent Category</th>
+                        <th>Image</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cat in category)
+                    {
+                        <tr>
+                            <td>@cat.Id</td>
+                            <td>@cat.Name</td>
+                            <td>@cat.Description</td>
+                            <td>@cat.ParentCategoryId</td>
+                            <td>
+                                @if (cat.ImageData != null)
+                                {
+                                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(cat.ImageData)" alt="Category Image" width="100" />
+                                }
+                                else
+                                {
+                                    <span>No Image</span>
+                                }
+                            </td>
+                            <td>
+                                @if (userMe.Role == Role.Manager || userMe.Role == Role.CEO || userMe.Role == Role.Admin)
+                                {
+                                    <a class="btn btn-primary" href='/categories/@cat.Id'>Edit</a>
+                                    <a class="btn btn-danger" @onclick="() => DeleteCategory(cat.Id)">Delete</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         }
     </div>
 </div>
