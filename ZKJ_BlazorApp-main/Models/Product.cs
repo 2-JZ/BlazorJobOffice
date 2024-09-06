@@ -12,6 +12,6 @@ namespace BlazorApp.Models
         public DateTime? LastModified { get; set; }
         public int CategoryId { get; set; }
         public virtual Category Category { get; set; }
-
+        public byte[]? ImageData { get; set; }  // Store image as binary data
     }
 }
