@@ -21,7 +21,22 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">X</a>
     </div>
+
+    <!-- Blazor WebAssembly -->
     <script src="_framework/blazor.webassembly.js"></script>
+
+    <!-- Custom JavaScript for Local Storage Access -->
+    <script>
+        window.localStorage = {
+            getItem: function (key) {
+                return localStorage.getItem(key);
+            },
+            setItem: function (key, value) {
+                localStorage.setItem(key, value);
+            }
+        };
+    </script>
+
 </body>
 
 </html>

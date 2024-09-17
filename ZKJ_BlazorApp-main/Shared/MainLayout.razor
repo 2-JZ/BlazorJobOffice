@@ -1,34 +1,4 @@
-﻿@* @inherits LayoutComponentBase
-@inject IAuthenticationService AuthenticationService
-@inject NavigationManager NavigationManager
-
-@if (AuthenticationService.User != null)
-{
-    <!-- nav -->
-    <nav class="navbar navbar-expand navbar-dark bg-dark">
-        <div class="navbar-nav">
-            <NavLink href="" Match="NavLinkMatch.All" class="nav-item nav-link">Home</NavLink>
-            <NavLink href="users" class="nav-item nav-link">Users</NavLink>
-            <NavLink href="bookcases" class="nav-item nav-link">Book Cases</NavLink>
-            <NavLink href="Products" class="nav-item nav-link">Products</NavLink>
-            <NavLink href="Contractors" class="nav-item nav-link">Contractors</NavLink>
-            <NavLink href="Contacts" class="nav-item nav-link">Contacts</NavLink>
-            <NavLink href="counter" class="nav-item nav-link">Counter</NavLink>
-            <NavLink href="logout" class="nav-item nav-link">Logout</NavLink>
-        </div>
-    </nav>
-}
-
-<div class="container">
-    @Body
-
-</div> *@
-
-<!-- Shared/MainLayout.razor -->
-<!-- Shared/MainLayout.razor -->
-
-
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 @inject IAuthenticationService AuthenticationService
 @inject NavigationManager NavigationManager
 
@@ -58,7 +28,7 @@
                 <!-- Wybór kategorii -->
                 <nav class="navbar navbar-expand navbar-dark bg-dark">
                     <div class="navbar-nav">
-                        <NavLink href="" Match="NavLinkMatch.All" class="nav-item nav-link">Home</NavLink>
+                        <NavLink href="/" Match="NavLinkMatch.All" class="nav-item nav-link">Home</NavLink>
                         <NavLink href="users" class="nav-item nav-link">Users</NavLink>
                         <NavLink href="bookcases" class="nav-item nav-link">Book Cases</NavLink>
                         <NavLink href="Products" class="nav-item nav-link">Products</NavLink>
@@ -67,9 +37,9 @@
                         <NavLink href="Contacts" class="nav-item nav-link">Contacts</NavLink>
                         <NavLink href="counter" class="nav-item nav-link">Counter</NavLink>
                         <NavLink href="logout" class="nav-item nav-link">Logout</NavLink>
+                        <NavLink href="cart" class="nav-item nav-link">Shopping Cart</NavLink> <!-- Update if needed -->
                     </div>
                 </nav>
-
             </div>
         </div>
 
@@ -80,7 +50,7 @@
                 <div class="sidebar-sticky">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <NavLink href="" Match="NavLinkMatch.All" class="nav-link">Home</NavLink>
+                            <NavLink href="/" Match="NavLinkMatch.All" class="nav-link">Home</NavLink>
                         </li>
                         <li class="nav-item">
                             <NavLink href="products" class="nav-link">Products</NavLink>
@@ -97,6 +67,3 @@
         </main>
     </div>
 </div>
-
-
-

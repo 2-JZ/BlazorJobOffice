@@ -25,6 +25,7 @@ namespace BlazorApp
                 .AddScoped<IContractorsService, ContractorsService>()
                 .AddScoped<IContactsService, ContactsService>()
                 .AddScoped<IProductsService, ProductsService>()
+                .AddScoped<IShoppingCartService, ShoppingCartService>()
                 .AddScoped<ICategoriesService, CategoriesService>();
 
 

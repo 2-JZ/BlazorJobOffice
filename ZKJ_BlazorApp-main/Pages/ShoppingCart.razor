@@ -1,0 +1,164 @@
+﻿@page "/cart"
+@using Microsoft.JSInterop
+@inject IShoppingCartService ShoppingCartService
+@inject IProductsService ProductsService
+@inject IJSRuntime JS // Inject JavaScript runtime
+
+<h3>Your Shopping Cart</h3>
+
+@if (loading)
+{
+    <div class="spinner-border spinner-border-sm"></div>
+}
+else if (cart != null && cart.Items.Any())
+{
+    <div class="mb-3">
+        <button class="btn btn-danger" @onclick="RemoveAllItems">Remove All</button>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in cart.Items)
+            {
+                <tr>
+                    <td>@item.ProductId</td>
+                    <td>
+                        <input type="number" min="1" value="@(item.Quantity ?? 1)"
+                               @onchange="@(e => UpdateQuantity(item.ProductId, int.Parse(e.Value.ToString())))" />
+                    </td>
+                    <td>@item.Price</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => RemoveItem(item.ProductId ?? 0 )">Remove</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (cart != null && !cart.Items.Any())
+{
+    <div class="alert alert-info">
+        <strong>Your cart is empty!</strong>
+        <p>Please add products to the cart.</p>
+    </div>
+}
+else
+{
+    <p>Loading cart...</p>
+}
+
+<button class="btn btn-primary" @onclick="AddRandomItem">Add Random Item</button>
+
+@code {
+    private BlazorApp.Models.ShoppingCart cart;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+
+        // Retrieve the cart from local storage (or create an empty one if it doesn't exist)
+        cart = await GetCartFromLocalStorage();
+
+        loading = false;
+    }
+
+    private async Task<BlazorApp.Models.ShoppingCart> GetCartFromLocalStorage()
+    {
+        var storedCartJson = await JS.InvokeAsync<string>("localStorage.getItem", "shoppingCart");
+
+        if (!string.IsNullOrEmpty(storedCartJson))
+        {
+            // Deserialize the stored JSON cart object back into a ShoppingCart model
+            return System.Text.Json.JsonSerializer.Deserialize<BlazorApp.Models.ShoppingCart>(storedCartJson);
+        }
+
+        // Return a new empty cart if nothing is stored in local storage
+        return new BlazorApp.Models.ShoppingCart
+            {
+                Items = new List<BlazorApp.Models.CartItem>()
+            };
+    }
+
+    private async Task SaveCartToLocalStorage()
+    {
+        // Serialize the cart object to JSON and save it in local storage
+        var cartJson = System.Text.Json.JsonSerializer.Serialize(cart);
+        await JS.InvokeVoidAsync("localStorage.setItem", "shoppingCart", cartJson);
+    }
+
+    private async Task RemoveItem(int productId)
+    {
+        var itemToRemove = cart.Items.FirstOrDefault(i => i.ProductId == productId);
+        if (itemToRemove != null)
+        {
+            cart.Items.Remove(itemToRemove);
+            await SaveCartToLocalStorage(); // Save the updated cart to local storage
+        }
+    }
+
+    private async Task RemoveAllItems()
+    {
+        // Clear all items from the cart
+        cart.Items.Clear();
+        await SaveCartToLocalStorage(); // Save the updated cart to local storage
+    }
+
+    private async Task AddRandomItem()
+    {
+        // Fetch all products from the database
+        var products = await ProductsService.GetAll();
+
+        if (products != null && products.Any())
+        {
+            var productList = products.ToList(); // Convert IEnumerable to List
+            var random = new Random();
+            var randomProduct = productList[random.Next(productList.Count)];
+
+            var cartItem = new BlazorApp.Models.CartItem
+                {
+                    ProductId = randomProduct.Id,
+                    Quantity = 1,
+                    Price = randomProduct.UnitPriceBrutto
+                };
+
+            // Check if the item already exists in the cart
+            var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == cartItem.ProductId);
+            if (existingItem != null)
+            {
+                // Update the quantity if the item already exists
+                existingItem.Quantity += cartItem.Quantity;
+            }
+            else
+            {
+                // Add the new item if it does not exist
+                cart.Items.Add(cartItem);
+            }
+
+            await SaveCartToLocalStorage(); // Save the updated cart to local storage
+        }
+    }
+
+    private async Task UpdateQuantity(int? productId, int quantity)
+    {
+        if (productId == null || quantity < 1)
+        {
+            // Handle invalid productId or quantity
+            return;
+        }
+
+        var itemToUpdate = cart.Items.FirstOrDefault(i => i.ProductId == productId.Value);
+        if (itemToUpdate != null)
+        {
+            itemToUpdate.Quantity = quantity;
+            await SaveCartToLocalStorage(); // Save the updated cart to local storage
+        }
+    }
+}
