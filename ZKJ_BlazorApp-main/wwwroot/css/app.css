@@ -79,3 +79,42 @@ textarea.form-control.invalid {
     height: 150px;
     object-fit: cover;
 }
+
+/*THE STYLE FOR CATEGORY*/
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.category-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+    padding: 15px;
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+    .category-card:hover {
+        transform: scale(1.05);
+    }
+
+.category-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+h4 {
+    font-size: 1.2rem;
+    color: #333;
+}
+
+
+/*END STYLE OF CATEGORY*/

@@ -18,9 +18,20 @@ else
         @foreach (var subcategory in subcategories)
         {
             <div class="category-card" @onclick="() => NavigateToCategory(subcategory.Id)">
-                @if (!string.IsNullOrEmpty(subcategory.ImagePath))
+                @if (subcategory.ImageData != null && subcategory.ImageData.Length > 0)
                 {
+                    <!-- Display image from binary data (Base64) -->
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(subcategory.ImageData)" alt="@subcategory.Name" class="category-image" />
+                }
+                else if (!string.IsNullOrEmpty(subcategory.ImagePath))
+                {
+                    <!-- If there's no binary data, use the path (local or URL) -->
                     <img src="@subcategory.ImagePath" alt="@subcategory.Name" class="category-image" />
+                }
+                else
+                {
+                    <!-- Fallback image if no data or path -->
+                    <img src="/images/no-photo.png" alt="No Image Available" class="category-image" />
                 }
                 <h4>@subcategory.Name</h4>
             </div>

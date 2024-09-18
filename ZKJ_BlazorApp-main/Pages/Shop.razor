@@ -14,9 +14,20 @@ else
         @foreach (var category in categories)
         {
             <div class="category-card" @onclick="() => NavigateToCategory(category.Id)">
-                @if (!string.IsNullOrEmpty(category.ImagePath))
+                @if (category.ImageData != null && category.ImageData.Length > 0)
                 {
+                    <!-- Display image from binary data (Base64) -->
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(category.ImageData)" alt="@category.Name" class="category-image" />
+                }
+                else if (!string.IsNullOrEmpty(category.ImagePath))
+                {
+                    <!-- If there's no binary data, use the path (local or URL) -->
                     <img src="@category.ImagePath" alt="@category.Name" class="category-image" />
+                }
+                else
+                {
+                    <!-- Fallback image if no data or path -->
+                    <img src="/images/no-photo.png" alt="No Image Available" class="category-image" />
                 }
                 <h4>@category.Name</h4>
             </div>
@@ -29,12 +40,14 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        // Fetching only top-level categories (parent categories)
         categories = await CategoriesService.GetAll();
-        categories = categories.Where(c => c.ParentCategoryId == null).ToList(); // Top-level categories
+        categories = categories.Where(c => c.ParentCategoryId == null).ToList();
     }
 
     private void NavigateToCategory(int categoryId)
     {
+        // Navigating to the subcategories page
         NavigationManager.NavigateTo($"/shop/subcategories/{categoryId}");
     }
 }
