@@ -61,3 +61,21 @@ textarea.form-control.invalid {
 .form-check-input.invalid ~ .validation-message {
     display: block;
 }
+
+
+.card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+    .card:hover {
+        transform: scale(1.05);
+    }
+
+.card-img-top {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}

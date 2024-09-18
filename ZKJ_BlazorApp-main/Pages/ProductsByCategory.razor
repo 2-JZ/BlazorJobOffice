@@ -1,0 +1,63 @@
+﻿@page "/productsbycategory/{categoryId:int}"
+@inject IProductsService ProductsService
+@inject ICategoriesService CategoriesService
+
+<h3>Products in @categoryName</h3>
+
+@if (loading)
+{
+    <p>Loading...</p>
+}
+else if (products != null && products.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Discount</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in products)
+            {
+                <tr>
+                    <td>
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.ImageData)" alt="@product.ProductName" style="width: 100px;" />
+                    </td>
+                    <td>
+                        <a href="/product/@product.Id">@product.ProductName</a>
+                    </td>
+                    <td>@product.UnitPriceBrutto</td>
+                    <td>@product.Discount</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No products found in this category.</p>
+}
+
+@code {
+    private IEnumerable<BlazorApp.Models.Product> products;
+    private string categoryName;
+    private bool loading = true;
+    [Parameter] public int categoryId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+
+        // Fetch the category details (if needed)
+        var category = await CategoriesService.GetById(categoryId);
+        categoryName = category.Name;
+
+        // Fetch products by category
+        products = await ProductsService.GetByCategory(categoryId);
+
+        loading = false;
+    }
+}

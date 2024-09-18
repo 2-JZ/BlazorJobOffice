@@ -1,0 +1,27 @@
+﻿@page "/category-details/{CategoryId:int}"
+@inject ICategoriesService CategoriesService
+
+<h3>Category Details</h3>
+
+@if (category != null)
+{
+    <div class="container mt-4">
+        <CategoryTree Categories="@category.Subcategories" />
+    </div>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    [Parameter]
+    public int CategoryId { get; set; }
+
+    private Category category;
+
+    protected override async Task OnInitializedAsync()
+    {
+        category = await CategoriesService.GetById(CategoryId);
+    }
+}

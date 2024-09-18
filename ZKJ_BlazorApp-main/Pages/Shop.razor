@@ -1,0 +1,40 @@
+﻿@page "/shop"
+@inject ICategoriesService CategoriesService
+@inject NavigationManager NavigationManager
+
+<h3>Shop</h3>
+
+@if (categories == null)
+{
+    <p>Loading categories...</p>
+}
+else
+{
+    <div class="category-grid">
+        @foreach (var category in categories)
+        {
+            <div class="category-card" @onclick="() => NavigateToCategory(category.Id)">
+                @if (!string.IsNullOrEmpty(category.ImagePath))
+                {
+                    <img src="@category.ImagePath" alt="@category.Name" class="category-image" />
+                }
+                <h4>@category.Name</h4>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private IEnumerable<Category> categories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await CategoriesService.GetAll();
+        categories = categories.Where(c => c.ParentCategoryId == null).ToList(); // Top-level categories
+    }
+
+    private void NavigateToCategory(int categoryId)
+    {
+        NavigationManager.NavigateTo($"/shop/subcategories/{categoryId}");
+    }
+}

@@ -1,0 +1,53 @@
+﻿@page "/shop/subcategories/{categoryId:int}"
+@inject ICategoriesService CategoriesService
+@inject NavigationManager NavigationManager
+
+<h3>@mainCategory?.Name</h3>
+
+@if (subcategories == null)
+{
+    <p>Loading subcategories...</p>
+}
+else if (!subcategories.Any())
+{
+    <p>No subcategories available.</p>
+}
+else
+{
+    <div class="category-grid">
+        @foreach (var subcategory in subcategories)
+        {
+            <div class="category-card" @onclick="() => NavigateToCategory(subcategory.Id)">
+                @if (!string.IsNullOrEmpty(subcategory.ImagePath))
+                {
+                    <img src="@subcategory.ImagePath" alt="@subcategory.Name" class="category-image" />
+                }
+                <h4>@subcategory.Name</h4>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int categoryId { get; set; }
+
+    private Category mainCategory;
+    private IEnumerable<Category> subcategories;
+
+    // Use OnParametersSetAsync to handle parameter changes (like categoryId changes)
+    protected override async Task OnParametersSetAsync()
+    {
+        // Fetch the main category
+        mainCategory = await CategoriesService.GetById(categoryId);
+
+        // Fetch its subcategories
+        subcategories = await CategoriesService.GetSubcategories(categoryId);
+    }
+
+    private void NavigateToCategory(int subcategoryId)
+    {
+        // Navigate to the next category level
+        NavigationManager.NavigateTo($"/shop/subcategories/{subcategoryId}");
+    }
+}

@@ -1,0 +1,26 @@
+﻿@using BlazorApp.Models
+@inject ICategoriesService CategoriesService
+@inject NavigationManager NavigationManager
+
+<div class="category-container">
+    @foreach (var category in Categories)
+    {
+        <div class="category-card">
+            <img src="data:image/jpeg;base64,@Convert.ToBase64String(category.ImageData)" alt="@category.Name" class="category-image" />
+            <h5>@category.Name</h5>
+            <button class="btn btn-info" @onclick="() => NavigateToCategory(category.Id)">
+                View Subcategories
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<Category> Categories { get; set; }
+
+    private void NavigateToCategory(int categoryId)
+    {
+        NavigationManager.NavigateTo($"/shop/{categoryId}");
+    }
+}

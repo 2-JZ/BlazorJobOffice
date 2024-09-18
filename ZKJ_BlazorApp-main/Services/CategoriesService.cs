@@ -44,4 +44,9 @@ public class CategoriesService : ICategoriesService
     {
         return _httpService.Get<Category>($"/Category/{id}");
     }
+
+    public async Task<IEnumerable<Category>> GetSubcategories(int parentId)
+    {
+        return await _httpService.Get<IEnumerable<Category>>($"/Category/Subcategories/{parentId}");
+    }
 }

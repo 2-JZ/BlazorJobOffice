@@ -9,4 +9,6 @@ public interface ICategoriesService
     Task<int> Delete(int id);
     Task<int> Update(Category category);
     Task<Category> GetById(int id);
+    Task<IEnumerable<Category>> GetSubcategories(int parentId);
+
 }

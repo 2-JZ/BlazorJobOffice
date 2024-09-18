@@ -1,0 +1,44 @@
+﻿@page "/product/{productId:int}"
+@inject IProductsService ProductsService
+
+<h3>@product?.ProductName</h3>
+
+@if (loading)
+{
+    <p>Loading product details...</p>
+}
+else if (product != null)
+{
+    <div>
+        @if (product.ImageData != null)
+        {
+            <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.ImageData)" alt="@product.ProductName" width="300" />
+        }
+        else
+        {
+            <img src="placeholder.jpg" alt="No Image Available" width="300" />
+        }
+        <h4>Price: @((product.UnitPriceBrutto.HasValue ? product.UnitPriceBrutto.Value.ToString("C") : "N/A"))</h4>
+        <p>@product.ProductName</p>
+        <p>Discount: @(product.Discount.HasValue ? product.Discount.Value + "%" : "No discount")</p>
+        <p>Last Modified: @(product.LastModified.HasValue ? product.LastModified.Value.ToString("g") : "Not available")</p>
+    </div>
+}
+else
+{
+    <p>Product not found.</p>
+}
+
+@code {
+    [Parameter] public int productId { get; set; }
+
+    private Product product;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch the product by its ID
+        product = await ProductsService.GetById(productId);
+        loading = false;
+    }
+}
