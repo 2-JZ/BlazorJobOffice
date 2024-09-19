@@ -1,5 +1,6 @@
 ﻿@page "/shop/subcategories/{categoryId:int}"
 @inject ICategoriesService CategoriesService
+@inject IProductsService ProductsService
 @inject NavigationManager NavigationManager
 
 <h3>@mainCategory?.Name</h3>
@@ -20,20 +21,77 @@ else
             <div class="category-card" @onclick="() => NavigateToCategory(subcategory.Id)">
                 @if (subcategory.ImageData != null && subcategory.ImageData.Length > 0)
                 {
-                    <!-- Display image from binary data (Base64) -->
                     <img src="data:image/jpeg;base64,@Convert.ToBase64String(subcategory.ImageData)" alt="@subcategory.Name" class="category-image" />
                 }
                 else if (!string.IsNullOrEmpty(subcategory.ImagePath))
                 {
-                    <!-- If there's no binary data, use the path (local or URL) -->
                     <img src="@subcategory.ImagePath" alt="@subcategory.Name" class="category-image" />
                 }
                 else
                 {
-                    <!-- Fallback image if no data or path -->
                     <img src="/images/no-photo.png" alt="No Image Available" class="category-image" />
                 }
                 <h4>@subcategory.Name</h4>
+            </div>
+        }
+    </div>
+}
+
+@* <!-- Products Section -->
+@if (isLoadingProducts)
+{
+    <p>Loading products...</p>
+}
+else if (products == null || !products.Any())
+{
+    <p>No products available for this category.</p>
+}
+else
+{
+    <div class="product-grid">
+        @foreach (var product in products)
+        {
+            <div class="product-card" @onclick="() => NavigateToProduct(product.Id)">
+                @if (product.ImageData != null && product.ImageData.Length > 0)
+                {
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.ImageData)" alt="@product.ProductName" class="product-image" />
+                }
+                else
+                {
+                    <img src="/images/no-photo.png" alt="No Image Available" class="product-image" />
+                }
+                <h4>@product.ProductName</h4>
+                <p>Price: @product.UnitPriceBrutto?.ToString("C")</p>
+            </div>
+        }
+    </div>
+} *@
+
+<!-- Products Section -->
+@if (isLoadingProducts)
+{
+    <p>Loading products...</p>
+}
+else if (products == null || !products.Any())
+{
+    <p>No products available for this category.</p>
+}
+else
+{
+    <div class="product-grid">
+        @foreach (var product in products)
+        {
+            <div class="product-card" @onclick="() => NavigateToProduct(product.Id)">
+                @if (product.ImageData != null && product.ImageData.Length > 0)
+                {
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.ImageData)" alt="@product.ProductName" class="product-image" />
+                }
+                else
+                {
+                    <img src="/images/no-photo.png" alt="No Image Available" class="product-image" />
+                }
+                <h4>@product.ProductName</h4>
+                <p>Price: @product.UnitPriceBrutto?.ToString("C")</p>
             </div>
         }
     </div>
@@ -45,20 +103,47 @@ else
 
     private Category mainCategory;
     private IEnumerable<Category> subcategories;
+    private IEnumerable<Product> products;
+    private bool isLoadingProducts = false;  // New flag to indicate loading state
 
-    // Use OnParametersSetAsync to handle parameter changes (like categoryId changes)
     protected override async Task OnParametersSetAsync()
     {
-        // Fetch the main category
-        mainCategory = await CategoriesService.GetById(categoryId);
+        try
+        {
+            // Reset products when the category changes
+            products = null;
+            isLoadingProducts = true;  // Indicate that products are being loaded
 
-        // Fetch its subcategories
-        subcategories = await CategoriesService.GetSubcategories(categoryId);
+            // Fetch the main category
+            mainCategory = await CategoriesService.GetById(categoryId);
+
+            // Fetch its subcategories
+            subcategories = await CategoriesService.GetSubcategories(categoryId);
+
+            // Fetch the products related to this category
+            products = await ProductsService.GetByCategory(categoryId);
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions here
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
+        }
+        finally
+        {
+            // Stop loading indication when products have been fetched
+            isLoadingProducts = false;
+        }
     }
 
     private void NavigateToCategory(int subcategoryId)
     {
-        // Navigate to the next category level
+        // Navigate to the selected subcategory
         NavigationManager.NavigateTo($"/shop/subcategories/{subcategoryId}");
+    }
+
+    private void NavigateToProduct(int productId)
+    {
+        // Navigate to the product details page
+        NavigationManager.NavigateTo($"/product/{productId}");
     }
 }

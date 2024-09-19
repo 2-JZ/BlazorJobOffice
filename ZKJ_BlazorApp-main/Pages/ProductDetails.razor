@@ -1,44 +1,57 @@
 ﻿@page "/product/{productId:int}"
 @inject IProductsService ProductsService
+@inject NavigationManager NavigationManager
 
 <h3>@product?.ProductName</h3>
 
-@if (loading)
+@if (product == null)
 {
     <p>Loading product details...</p>
 }
-else if (product != null)
+else
 {
-    <div>
-        @if (product.ImageData != null)
+    <div class="product-details">
+        @if (product.ImageData != null && product.ImageData.Length > 0)
         {
-            <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.ImageData)" alt="@product.ProductName" width="300" />
+            <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.ImageData)" alt="@product.ProductName" class="product-image" />
         }
         else
         {
-            <img src="placeholder.jpg" alt="No Image Available" width="300" />
+            <img src="/images/no-photo.png" alt="No Image Available" class="product-image" />
         }
-        <h4>Price: @((product.UnitPriceBrutto.HasValue ? product.UnitPriceBrutto.Value.ToString("C") : "N/A"))</h4>
-        <p>@product.ProductName</p>
-        <p>Discount: @(product.Discount.HasValue ? product.Discount.Value + "%" : "No discount")</p>
-        <p>Last Modified: @(product.LastModified.HasValue ? product.LastModified.Value.ToString("g") : "Not available")</p>
+
+        <h4>Product Name: @product.ProductName</h4>
+        <p>Price (Netto): @product.UnitPriceNetto?.ToString("C")</p>
+        <p>Price (Brutto): @product.UnitPriceBrutto?.ToString("C")</p>
+        <p>Discount: @product.Discount?.ToString("P")</p>
+        <p>Last Modified: @product.LastModified?.ToString("g")</p>
+        <p>Category: @product.Category?.Name</p>
+
+        <button @onclick="GoBack">Back to Products</button>
     </div>
-}
-else
-{
-    <p>Product not found.</p>
 }
 
 @code {
-    [Parameter] public int productId { get; set; }
+    [Parameter]
+    public int productId { get; set; }
 
     private Product product;
-    private bool loading = true;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        // Fetch the product by its ID
-        product = await ProductsService.GetById(productId);
-        loading = false;
+        try
+        {
+            // Fetch the product details by ID
+            product = await ProductsService.GetById(productId);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching product details: {ex.Message}");
+        }
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/shop");  // Modify the navigation path as needed
     }
 }
