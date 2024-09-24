@@ -4,13 +4,27 @@
 <head>
     <base href="/" />
     <title>ASP.NET Core Blazor WebAssembly</title>
+    <link rel="icon" href="data:," />
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Font awsome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
 
     <!-- bootstrap css -->
     <link href="//netdna.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
 
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+
+
     <!-- custom css -->
     <link href="css/app.css" rel="stylesheet" />
+
+    <!-- Tymczasowe style wewnêtrzne -->
+
+
 </head>
 
 <body>
@@ -33,6 +47,13 @@
             },
             setItem: function (key, value) {
                 localStorage.setItem(key, value);
+            }
+        };
+
+        // Function to blur the active element (removes focus)
+        window.blurActiveElement = function () {
+            if (document.activeElement && document.activeElement.blur) {
+                document.activeElement.blur();
             }
         };
     </script>

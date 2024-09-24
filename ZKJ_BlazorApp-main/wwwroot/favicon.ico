@@ -1,0 +1,6 @@
+﻿namespace BlazorApp.wwwroot
+{
+    public class favicon
+    {
+    }
+}

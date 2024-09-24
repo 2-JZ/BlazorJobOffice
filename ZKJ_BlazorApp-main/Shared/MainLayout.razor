@@ -1,31 +1,54 @@
 ﻿@inherits LayoutComponentBase
 @inject IAuthenticationService AuthenticationService
 @inject NavigationManager NavigationManager
+@using Blazored.Toast.Configuration
+
+
+<BlazoredToasts Position="ToastPosition.TopRight"
+                Timeout="1"
+                IconType="IconType.Material"
+                ErrorIcon="error_outline"
+                InfoIcon="school"
+                SuccessIcon="done_outline"
+                WarningIcon="warning"
+                ShowProgressBar="@true"
+                ShowCloseButton="@true"
+                MaxToastCount="3">
+    <CloseButtonContent>
+        <div>
+            <span class="myCloseButtonStyleClass">&times;</span>
+        </div>
+    </CloseButtonContent>
+</BlazoredToasts>
 
 <div class="container-fluid">
     <div class="row">
         <!-- Navbar -->
         <header class="col-md-12 navbar navbar-dark bg-dark">
-            <a class="navbar-brand" href="#">Logo lub Inny Tekst</a>
+            <a class="navbar-brand" href="#">Your Brand</a>
 
             @if (AuthenticationService.User != null)
             {
-                <div class="d-flex ml-auto">
-                    <span class="navbar-text mr-2">Hello, @AuthenticationService.User!</span>
-                    <a href="logout" class="btn btn-outline-light">Logout</a>
+                <div class="d-flex ml-auto align-items-center">
+                    <span class="navbar-text mr-2">Hello, @AuthenticationService.User.Username!</span>
+                    <button @onclick="Logout" class="btn btn-outline-light">Logout</button>
                 </div>
+            }
+            else
+            {
+                <a href="login" class="btn btn-outline-light ml-auto">Login</a>
             }
         </header>
 
-        <!-- Dodatkowy kontener -->
+        <!-- Extra container for category selection and cart -->
         <div class="col-md-12 mt-3">
             <div class="d-flex justify-content-between align-items-center bg-light p-2">
-                <!-- Koszyk -->
+                <!-- Shopping Cart -->
                 <div class="mr-3">
-                    <span>Koszyk: 0</span>
+                    <span>Koszyk: @cartItemsCount</span>
                 </div>
 
-                <!-- Wybór kategorii -->
+                <!-- Category Selection -->
                 <nav class="navbar navbar-expand navbar-dark bg-dark">
                     <div class="navbar-nav">
                         <NavLink href="/" Match="NavLinkMatch.All" class="nav-item nav-link">Home</NavLink>
@@ -37,14 +60,13 @@
                         <NavLink href="Contacts" class="nav-item nav-link">Contacts</NavLink>
                         <NavLink href="counter" class="nav-item nav-link">Counter</NavLink>
                         <NavLink href="shop" class="nav-item nav-link">Shop</NavLink>
-                        <NavLink href="logout" class="nav-item nav-link">Logout</NavLink>
-                        <NavLink href="cart" class="nav-item nav-link">Shopping Cart</NavLink> <!-- Update if needed -->
+                        <NavLink href="cart" class="nav-item nav-link">Shopping Cart</NavLink>
                     </div>
                 </nav>
             </div>
         </div>
 
-        <!-- Sidebar -->
+        <!-- Sidebar for authenticated users -->
         @if (AuthenticationService.User != null)
         {
             <nav class="col-md-2 d-none d-md-block bg-light sidebar">
@@ -56,15 +78,42 @@
                         <li class="nav-item">
                             <NavLink href="products" class="nav-link">Products</NavLink>
                         </li>
-                        <!-- Dodaj inne linki, jeśli są potrzebne -->
+                        <!-- Add additional links if needed -->
                     </ul>
                 </div>
             </nav>
         }
 
-        <!-- Treść strony -->
+        <!-- Main page content -->
         <main role="main" class="col-md-10 ml-sm-auto col-lg-12 px-4">
+
+
             @Body
         </main>
     </div>
 </div>
+
+<!-- Blazored Toast component -->
+
+@code {
+    private int cartItemsCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationService.User != null)
+        {
+            cartItemsCount = await GetCartItemCountAsync();
+        }
+    }
+
+    private async Task<int> GetCartItemCountAsync()
+    {
+        return 5; // Example hardcoded value, replace with actual implementation
+    }
+
+    private void Logout()
+    {
+        AuthenticationService.Logout();
+        NavigationManager.NavigateTo("login");
+    }
+}

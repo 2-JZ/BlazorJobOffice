@@ -1,6 +1,12 @@
 ﻿@page "/product/{productId:int}"
+@using Microsoft.JSInterop
+@using BlazorApp.Models
+@using Blazored.Toast.Services
 @inject IProductsService ProductsService
+@inject IShoppingCartService ShoppingCartService
+@inject IJSRuntime JS
 @inject NavigationManager NavigationManager
+@inject IToastService ToastService
 
 <h3>@product?.ProductName</h3>
 
@@ -27,7 +33,8 @@ else
         <p>Last Modified: @product.LastModified?.ToString("g")</p>
         <p>Category: @product.Category?.Name</p>
 
-        <button @onclick="GoBack">Back to Products</button>
+        <button class="add-to-cart-button" @onclick="AddToCart">Add to Cart</button>
+        <button class="btn btn-secondary" @onclick="GoBack">Back to Products</button>
     </div>
 }
 
@@ -36,22 +43,103 @@ else
     public int productId { get; set; }
 
     private Product product;
+    private BlazorApp.Models.ShoppingCart cart = new BlazorApp.Models.ShoppingCart();
 
     protected override async Task OnParametersSetAsync()
     {
+        await LoadProductDetails();
+    }
+
+    private async Task LoadProductDetails()
+    {
         try
         {
-            // Fetch the product details by ID
             product = await ProductsService.GetById(productId);
+            cart = await GetCartFromLocalStorage();
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error fetching product details: {ex.Message}");
+            ToastService.ShowError("Failed to load product details.");
+        }
+    }
+
+    private async Task AddToCart()
+    {
+        if (product == null)
+        {
+            ToastService.ShowWarning("Product not available.");
+            return;
+        }
+
+        try
+        {
+            var cartItem = new CartItem
+                {
+                    ProductId = productId,
+                    Quantity = 1,
+                    Price = product.UnitPriceBrutto
+                };
+
+            if (cart.Items == null)
+            {
+                cart.Items = new List<CartItem>();
+            }
+
+            var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == cartItem.ProductId);
+            if (existingItem != null)
+            {
+                existingItem.Quantity += cartItem.Quantity;
+            }
+            else
+            {
+                cart.Items.Add(cartItem);
+            }
+
+            await SaveCartToLocalStorage();
+            ToastService.ShowSuccess("Product added to cart!");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error adding product to cart: {ex.Message}");
+            ToastService.ShowError("Failed to add product to cart.");
+        }
+    }
+
+    private async Task<BlazorApp.Models.ShoppingCart> GetCartFromLocalStorage()
+    {
+        try
+        {
+            var storedCartJson = await JS.InvokeAsync<string>("localStorage.getItem", "shoppingCart");
+            if (!string.IsNullOrEmpty(storedCartJson))
+            {
+                return System.Text.Json.JsonSerializer.Deserialize<BlazorApp.Models.ShoppingCart>(storedCartJson);
+            }
+            return new BlazorApp.Models.ShoppingCart { Items = new List<CartItem>() };
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error retrieving cart from local storage: {ex.Message}");
+            return new BlazorApp.Models.ShoppingCart { Items = new List<CartItem>() };
+        }
+    }
+
+    private async Task SaveCartToLocalStorage()
+    {
+        try
+        {
+            var cartJson = System.Text.Json.JsonSerializer.Serialize(cart);
+            await JS.InvokeVoidAsync("localStorage.setItem", "shoppingCart", cartJson);
+            Console.WriteLine("Cart saved to local storage.");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error saving cart to local storage: {ex.Message}");
         }
     }
 
     private void GoBack()
     {
-        NavigationManager.NavigateTo("/shop");  // Modify the navigation path as needed
+        NavigationManager.NavigateTo("/shop");
     }
 }

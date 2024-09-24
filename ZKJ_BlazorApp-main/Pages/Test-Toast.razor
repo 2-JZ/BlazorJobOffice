@@ -1,0 +1,39 @@
+﻿@page "/test-toast"
+@using Blazored.Toast.Services
+@using Microsoft.JSInterop
+@inject IToastService ToastService
+@inject IJSRuntime JSRuntime
+
+<h3>Test Toast Notifications</h3>
+
+<!-- Buttons for different toast types -->
+<button class="btn btn-success" @onclick="ShowSuccessToast">Success Toast</button>
+<button class="btn btn-info" @onclick="ShowInfoToast">Info Toast</button>
+<button class="btn btn-warning" @onclick="ShowWarningToast">Warning Toast</button>
+<button class="btn btn-danger" @onclick="ShowErrorToast">Error Toast</button>
+
+@code {
+    private async Task ShowSuccessToast()
+    {
+        ToastService.ShowSuccess("This is a success toast message!");
+        await JSRuntime.InvokeVoidAsync("blurActiveElement");
+    }
+
+    private async Task ShowInfoToast()
+    {
+        ToastService.ShowInfo("This is an info toast message!");
+        await JSRuntime.InvokeVoidAsync("blurActiveElement");
+    }
+
+    private async Task ShowWarningToast()
+    {
+        ToastService.ShowWarning("This is a warning toast message!");
+        await JSRuntime.InvokeVoidAsync("blurActiveElement");
+    }
+
+    private async Task ShowErrorToast()
+    {
+        ToastService.ShowError("This is an error toast message!");
+        await JSRuntime.InvokeVoidAsync("blurActiveElement");
+    }
+}
