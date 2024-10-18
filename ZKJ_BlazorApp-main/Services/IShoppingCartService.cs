@@ -1,12 +1,13 @@
 ﻿using BlazorApp.Models;
 using System.Threading.Tasks;
 
-namespace BlazorApp.Services
+public interface IShoppingCartService
 {
-    public interface IShoppingCartService
-    {
-        Task<ShoppingCart> GetCartById(int cartId);
-        Task AddItemToCart(int cartId, CartItem item);
-        Task RemoveItemFromCart(int cartId, int productId);
-    }
+    ShoppingCartModel Cart { get; } // Właściwość do pobierania koszyka
+    Task SetCart(ShoppingCartModel cart); // Ustaw koszyk
+    Task<ShoppingCartModel> GetCart(); // Nowa metoda do pobierania koszyka
+    Task<ShoppingCartModel> GetCartById(int cartId); // Metoda do pobierania koszyka według ID
+    Task AddItemToCart(int cartId, CartItem item); // Metoda do dodawania przedmiotu
+    Task RemoveItemFromCart(int cartId, int productId); // Metoda do usuwania przedmiotu
+    Task ClearCart(); // Metoda do czyszczenia koszyka
 }

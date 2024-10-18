@@ -1,0 +1,157 @@
+﻿@page "/checkout"
+@inject IJSRuntime JSRuntime
+@inject IShoppingCartService ShoppingCartService
+@inject IHttpService HttpService
+@using System.Text.Json
+@using Microsoft.JSInterop
+
+<h3>Checkout</h3>
+
+@if (cart != null && cart.Items.Any())
+{
+    <div class="total-amount">
+        <h4>Total: @totalAmount.ToString("C")</h4>
+    </div>
+}
+else
+{
+    <div>Your cart is empty.</div>
+}
+
+<div id="card-element" class="form-control"></div>
+<div id="card-errors" role="alert" style="color: red;"></div>
+<button class="btn btn-primary" @onclick="ProcessPayment" disabled="@isPayButtonDisabled">Pay</button>
+<button class="btn btn-secondary" @onclick="ProcessPayment">Test Classic Pay</button>
+
+@code {
+    private bool isStripeInitialized;
+    private bool isPayButtonDisabled = true; // Button is disabled by default
+    private decimal totalAmount;
+    private ShoppingCartModel cart;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var cartJson = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "shoppingCart");
+
+            if (!string.IsNullOrEmpty(cartJson))
+            {
+                cart = JsonSerializer.Deserialize<ShoppingCartModel>(cartJson);
+                totalAmount = cart?.GetTotalAmount() ?? 0; // Null-safe cart check and assign zero if cart is null
+                Console.WriteLine($"Cart loaded. Total amount: {totalAmount}");
+            }
+            else
+            {
+                cart = new ShoppingCartModel();
+                Console.WriteLine("Cart is empty, initialized a new one.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during OnInitializedAsync: {ex.Message}");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("initializeStripe");
+                isStripeInitialized = true;
+
+                // Pass instance reference to JS for monitoring card input validity
+                await JSRuntime.InvokeVoidAsync("monitorCardInputValidity", DotNetObjectReference.Create(this));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in OnAfterRenderAsync: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task ProcessPayment()
+    {
+        try
+        {
+            Console.WriteLine("Handling checkout with primary payment method");
+
+            // Check if Stripe is initialized
+            if (!isStripeInitialized)
+            {
+                Console.WriteLine("Stripe is not initialized.");
+                return;
+            }
+
+            // Check if cart or cart items are null or empty
+            if (cart == null || cart.Items == null || !cart.Items.Any())
+            {
+                Console.WriteLine("Cart or cart items are null or empty, cannot proceed.");
+                return;
+            }
+
+            // Create a payment method and get its ID
+            var paymentMethodId = await JSRuntime.InvokeAsync<string>("completePayment", DotNetObjectReference.Create(this));
+
+            if (string.IsNullOrEmpty(paymentMethodId))
+            {
+                Console.WriteLine("Payment method ID is null or empty.");
+                return;
+            }
+
+            var paymentRequest = new CreatePaymentIntentRequest
+                {
+                    CartItems = cart.Items,
+                    Amount = cart.GetTotalAmount(),
+                    Currency = "usd",
+                    PaymentMethodId = paymentMethodId // Include PaymentMethodId here
+                };
+
+            Console.WriteLine("Sending payment request to server.");
+            var result = await HttpService.PostAsync<CreatePaymentResponse>("payments/create-payment-intent", paymentRequest);
+
+            if (result == null || string.IsNullOrEmpty(result.ClientSecret))
+            {
+                Console.WriteLine("Error: ClientSecret is null or empty.");
+                return;
+            }
+
+            Console.WriteLine($"Received ClientSecret: {result.ClientSecret}. Proceeding with payment.");
+            await JSRuntime.InvokeVoidAsync("completePayment", result.ClientSecret);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception in ProcessPayment: {ex.Message}");
+        }
+    }
+
+    [JSInvokable]
+    public void EnablePayButton()
+    {
+        try
+        {
+            Console.WriteLine("EnablePayButton method was called.");
+            isPayButtonDisabled = false;  // Enable the Pay button
+            StateHasChanged();  // Refresh the UI to reflect the change
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in EnablePayButton: {ex.Message}");
+        }
+    }
+
+    public class CreatePaymentIntentRequest
+    {
+        public List<CartItem> CartItems { get; set; }
+        public decimal Amount { get; set; }
+        public string Currency { get; set; }
+        public string PaymentMethodId { get; set; }
+    }
+
+    public class CreatePaymentResponse
+    {
+        public string ClientSecret { get; set; }
+    }
+}

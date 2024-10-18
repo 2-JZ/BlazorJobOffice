@@ -1,0 +1,61 @@
+﻿@page "/invoice/{invoiceId:int}"
+@inject IInvoiceService InvoiceService
+@inject NavigationManager Navigation
+
+<h3>Invoice Details</h3>
+
+@if (invoice == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div>
+        <p><strong>Invoice Number:</strong> @invoice.Number</p>
+        <p><strong>Customer Name:</strong> @invoice.CustomerName</p>
+        <p><strong>Invoice Issue Date:</strong> @invoice.InvoiceIssue.ToShortDateString()</p>
+        <p><strong>Payment Deadline:</strong> @invoice.PaymentDeadline.ToShortDateString()</p>
+        <p><strong>Total Amount:</strong> @invoice.TotalAmount</p>
+        <p><strong>Is Paid?</strong> @(invoice.IsPaid.HasValue && invoice.IsPaid.Value ? "Yes" : "No")</p>
+    </div>
+
+    <h4>Invoice Items</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in invoice.Items)
+            {
+                <tr>
+                    <td>@item.ProductName</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.UnitPrice</td>
+                    <td>@item.TotalPrice</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-secondary" @onclick="BackToInvoices">Back to Invoices</button>
+}
+
+@code {
+    [Parameter] public int invoiceId { get; set; }
+    private Invoice invoice;
+
+    protected override async Task OnInitializedAsync()
+    {
+        invoice = await InvoiceService.GetById(invoiceId);
+    }
+
+    private void BackToInvoices()
+    {
+        Navigation.NavigateTo("/invoices");
+    }
+}

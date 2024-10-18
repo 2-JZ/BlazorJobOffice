@@ -7,6 +7,7 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using static BlazorApp.Pages.Checkout;
 
 public class CategoriesService : ICategoriesService
 {
@@ -25,6 +26,7 @@ public class CategoriesService : ICategoriesService
     public async Task<int> CreateCategory(Category category)
     {
         var result = await _httpService.Post<Category>("Category/AddCategory", category);
+
         return result.Id;
     }
 

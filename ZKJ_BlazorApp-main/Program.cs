@@ -41,7 +41,11 @@ namespace BlazorApp
                 .AddScoped<IContactsService, ContactsService>()
                 .AddScoped<IProductsService, ProductsService>()
                 .AddScoped<IShoppingCartService, ShoppingCartService>()
-                .AddScoped<ICategoriesService, CategoriesService>();
+                .AddScoped<ICategoriesService, CategoriesService>()
+                .AddScoped<IInvoiceService, InvoiceService>()
+                .AddScoped<IStripePaymentService, StripePaymentService>();
+            
+
 
             // Configure http client
             builder.Services.AddScoped(x => {

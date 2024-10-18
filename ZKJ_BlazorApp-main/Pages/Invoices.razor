@@ -1,0 +1,47 @@
+﻿@page "/invoices"
+@inject IInvoiceService InvoiceService
+
+<h3>All Invoices</h3>
+
+<!-- Display Loading indicator while fetching data -->
+@if (invoices == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Invoice Number</th>
+                <th>Customer Name</th>
+                <th>Issue Date</th>
+                <th>Payment Deadline</th>
+                <th>Total Amount</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var invoice in invoices)
+            {
+                <tr>
+                    <td>@invoice.Number</td>
+                    <td>@invoice.CustomerName</td>
+                    <td>@invoice.InvoiceIssue.ToShortDateString()</td>
+                    <td>@invoice.PaymentDeadline.ToShortDateString()</td>
+                    <td>@invoice.TotalAmount.ToString("C")</td> <!-- Format as currency -->
+                    <td>@(invoice.IsPaid.HasValue && invoice.IsPaid.Value ? "Paid" : "Not Paid")</td> <!-- Handle nullable -->
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<Invoice> invoices;
+
+    protected override async Task OnInitializedAsync()
+    {
+        invoices = await InvoiceService.GetAll(); // Fetch all invoices
+    }
+}

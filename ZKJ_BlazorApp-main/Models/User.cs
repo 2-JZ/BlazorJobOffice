@@ -9,7 +9,7 @@ namespace BlazorApp.Models
         public string AuthData { get; set; }
         public string Password { get; set; }
         public Role Role { get; set; }
-        public ShoppingCart shoppingCart { get; set; }
+        public ShoppingCartModel shoppingCart { get; set; }
     }
 
     public enum Role

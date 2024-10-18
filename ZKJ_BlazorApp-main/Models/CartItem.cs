@@ -9,7 +9,7 @@ namespace BlazorApp.Models
 
         public int? CartId { get; set; }  // Foreign Key to ShoppingCart (Nullable)
 
-        public ShoppingCart? ShoppingCart { get; set; }  // Navigation property for the ShoppingCart (Nullable)
+        public ShoppingCartModel? ShoppingCart { get; set; }  // Navigation property for the ShoppingCart (Nullable)
 
         public int? ProductId { get; set; }  // Foreign Key to Product (Nullable)
 

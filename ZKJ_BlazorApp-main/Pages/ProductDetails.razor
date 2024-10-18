@@ -42,8 +42,8 @@ else
     [Parameter]
     public int productId { get; set; }
 
-    private Product product;
-    private BlazorApp.Models.ShoppingCart cart = new BlazorApp.Models.ShoppingCart();
+    private ProductRequest product;
+    private BlazorApp.Models.ShoppingCartModel cart = new BlazorApp.Models.ShoppingCartModel();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -106,21 +106,21 @@ else
         }
     }
 
-    private async Task<BlazorApp.Models.ShoppingCart> GetCartFromLocalStorage()
+    private async Task<BlazorApp.Models.ShoppingCartModel> GetCartFromLocalStorage()
     {
         try
         {
             var storedCartJson = await JS.InvokeAsync<string>("localStorage.getItem", "shoppingCart");
             if (!string.IsNullOrEmpty(storedCartJson))
             {
-                return System.Text.Json.JsonSerializer.Deserialize<BlazorApp.Models.ShoppingCart>(storedCartJson);
+                return System.Text.Json.JsonSerializer.Deserialize<BlazorApp.Models.ShoppingCartModel>(storedCartJson);
             }
-            return new BlazorApp.Models.ShoppingCart { Items = new List<CartItem>() };
+            return new BlazorApp.Models.ShoppingCartModel { Items = new List<CartItem>() };
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error retrieving cart from local storage: {ex.Message}");
-            return new BlazorApp.Models.ShoppingCart { Items = new List<CartItem>() };
+            return new BlazorApp.Models.ShoppingCartModel { Items = new List<CartItem>() };
         }
     }
 

@@ -12,19 +12,19 @@ public class ProductsService : IProductsService
         _httpService = httpService;
     }
 
-    public Task<IEnumerable<Product>> GetAll()
+    public Task<IEnumerable<ProductRequest>> GetAll()
     {
-        return _httpService.Get<IEnumerable<Product>>("/Products");
+        return _httpService.Get<IEnumerable<ProductRequest>>("/Products");
     }
 
-    public Task<IEnumerable<Product>> GetByCategory(int categoryId)
+    public Task<IEnumerable<ProductRequest>> GetByCategory(int categoryId)
     {
-        return _httpService.Get<IEnumerable<Product>>($"/Products/byCategory/{categoryId}");
+        return _httpService.Get<IEnumerable<ProductRequest>>($"/Products/byCategory/{categoryId}");
     }
 
-    public async Task<int> Create(Product product)
+    public async Task<int> Create(ProductRequest product)
     {
-        var result = await _httpService.Post<Product>("Products/addProduct", product);
+        var result = await _httpService.Post<ProductRequest>("Products/addProduct", product);
         return result.Id;
     }
 
@@ -34,14 +34,14 @@ public class ProductsService : IProductsService
         return id;
     }
 
-    public async Task<int> Update(Product product)
+    public async Task<int> Update(ProductRequest product)
     {
-        var result = await _httpService.Put<Product>($"/Products/{product.Id}", product);
+        var result = await _httpService.Put<ProductRequest>($"/Products/{product.Id}", product);
         return result.Id;
     }
 
-    public Task<Product> GetById(int id)
+    public Task<ProductRequest> GetById(int id)
     {
-        return _httpService.Get<Product>($"/Products/{id}");
+        return _httpService.Get<ProductRequest>($"/Products/{id}");
     }
 }

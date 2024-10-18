@@ -3,6 +3,9 @@
 @inject IShoppingCartService ShoppingCartService
 @inject IProductsService ProductsService
 @inject IJSRuntime JS // Inject JavaScript runtime
+@inject NavigationManager NavigationManager // Inject NavigationManager
+@using System.Globalization
+@using BlazorApp.Models // Make sure to include this for the ShoppingCart model
 
 <h3>Your Shopping Cart</h3>
 
@@ -33,14 +36,20 @@ else if (cart != null && cart.Items.Any())
                         <input type="number" min="1" value="@(item.Quantity ?? 1)"
                                @onchange="@(e => UpdateQuantity(item.ProductId, int.Parse(e.Value.ToString())))" />
                     </td>
-                    <td>@item.Price</td>
+                    <td>@((item.Price ?? 0).ToString("C2", CultureInfo.GetCultureInfo("en-US")))</td> <!-- Price formatted in USD -->
                     <td>
-                        <button class="btn btn-danger" @onclick="() => RemoveItem(item.ProductId ?? 0 )">Remove</button>
+                        <button class="btn btn-danger" @onclick="() => RemoveItem(item.ProductId ?? 0)">Remove</button>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
+
+    <h4>Total Amount: @Amount.ToString("C2", CultureInfo.GetCultureInfo("en-US"))</h4> <!-- Format total amount in USD -->
+
+    <div class="mt-3">
+        <button class="btn btn-primary" @onclick="GoToCheckout">Proceed to Checkout</button> <!-- Checkout button -->
+    </div>
 }
 else if (cart != null && !cart.Items.Any())
 {
@@ -57,7 +66,7 @@ else
 <button class="btn btn-primary" @onclick="AddRandomItem">Add Random Item</button>
 
 @code {
-    private BlazorApp.Models.ShoppingCart cart;
+    private BlazorApp.Models.ShoppingCartModel cart;
     private bool loading = true;
 
     protected override async Task OnInitializedAsync()
@@ -70,18 +79,18 @@ else
         loading = false;
     }
 
-    private async Task<BlazorApp.Models.ShoppingCart> GetCartFromLocalStorage()
+    private async Task<BlazorApp.Models.ShoppingCartModel> GetCartFromLocalStorage()
     {
         var storedCartJson = await JS.InvokeAsync<string>("localStorage.getItem", "shoppingCart");
 
         if (!string.IsNullOrEmpty(storedCartJson))
         {
             // Deserialize the stored JSON cart object back into a ShoppingCart model
-            return System.Text.Json.JsonSerializer.Deserialize<BlazorApp.Models.ShoppingCart>(storedCartJson);
+            return System.Text.Json.JsonSerializer.Deserialize<BlazorApp.Models.ShoppingCartModel>(storedCartJson);
         }
 
         // Return a new empty cart if nothing is stored in local storage
-        return new BlazorApp.Models.ShoppingCart
+        return new BlazorApp.Models.ShoppingCartModel
             {
                 Items = new List<BlazorApp.Models.CartItem>()
             };
@@ -161,4 +170,22 @@ else
             await SaveCartToLocalStorage(); // Save the updated cart to local storage
         }
     }
+
+    // Calculate the total amount
+    private decimal Amount => cart.Items.Sum(item => (item.Quantity ?? 1) * (item.Price ?? 0));
+
+    // Navigate to the Checkout page
+
+
+    private async Task GoToCheckout()
+    {
+        // Ustaw koszyk w serwisie
+        await ShoppingCartService.SetCart(cart);
+
+        // Przekierowanie do strony checkout
+        NavigationManager.NavigateTo("/checkout");
+    }
+    
 }
+
+

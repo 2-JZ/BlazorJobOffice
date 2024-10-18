@@ -1,0 +1,15 @@
+﻿@page "/Payment-complete"
+@inject NavigationManager Navigation
+
+<h3>Payment Complete</h3>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // You can grab any query parameters or additional information from the URL
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+
+        // Handle the payment completion logic (like checking payment status)
+        // You may want to verify the payment result with your backend here
+    }
+}

@@ -2,7 +2,7 @@
 
 namespace BlazorApp.Models
 {
-    public class Product
+    public class ProductRequest
     {
         public int Id { get; set; }
         public string ProductName { get; set; }
